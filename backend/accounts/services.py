@@ -1,8 +1,7 @@
-from decimal import Decimal, InvalidOperation
+from decimal import Decimal, InvalidOperation, ROUND_DOWN
 
 from django.db import transaction
 from django.core.exceptions import ValidationError
-
 from .models import Account, Transaction
 
 
@@ -20,7 +19,7 @@ def process_transaction(
     if transaction_type not in Transaction.TransactionType.values:
         raise ValidationError("Invalid transaction type.")
 
-    #Parse & validate amount
+    # Parse & validate amount
     try:
         amount = Decimal(amount_str)
     except (InvalidOperation, TypeError):
@@ -28,6 +27,9 @@ def process_transaction(
 
     if amount <= 0:
         raise ValidationError("Transaction amount must be positive.")
+
+    # truncate to 2 decimal places
+    amount = amount.quantize(Decimal("0.00"), rounding=ROUND_DOWN)
 
     
     #Lock accounts deterministically (deadlock-safe)
