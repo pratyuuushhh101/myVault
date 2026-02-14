@@ -5,8 +5,8 @@ from rest_framework.permissions import IsAuthenticated
 from django.core.exceptions import ValidationError
 from .services import process_transaction
 
-from .serializers import (TransactionCreateSerializer,TransactionResponseSerializer)
-from .models import Transaction
+from .serializers import (TransactionCreateSerializer,TransactionResponseSerializer,AccountCreateSerializer)
+from .models import Transaction,Account
 
 # Create your views here.
 class TransactionCreateAPIView(APIView):
@@ -38,8 +38,6 @@ class TransactionCreateAPIView(APIView):
             status=status.HTTP_201_CREATED
         )
 
-from .models import Account
-
 class AccountBalanceAPIView(APIView):
     permission_classes = [IsAuthenticated]
 
@@ -49,3 +47,20 @@ class AccountBalanceAPIView(APIView):
             return Response({"balance": acc.balance})
         except Account.DoesNotExist:
             return Response({"error": "Account not found"}, status=404)
+
+class AccountCreateAPIView(APIView):
+    permission_classes = [IsAuthenticated]
+
+    def post(self, request):
+        serializer = AccountCreateSerializer(data=request.data)
+        serializer.is_valid(raise_exception=True)
+
+        account = Account.objects.create(
+            user=request.user,
+            account_type=serializer.validated_data["account_type"]
+        )
+
+        return Response(
+            AccountCreateSerializer(account).data,
+            status=status.HTTP_201_CREATED
+        )
