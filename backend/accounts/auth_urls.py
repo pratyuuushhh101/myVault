@@ -10,7 +10,3 @@ urlpatterns = [
     path("login/", TokenObtainPairView.as_view(), name="jwt-login"),
     path("refresh/", TokenRefreshView.as_view(), name="jwt-refresh"),
 ]
-
-# you need to work on tokenobtainpairview or custom login view.
-# right now its either django's inuilt: username and pwd
-# but email+password is decided so keep the custom login class logic
