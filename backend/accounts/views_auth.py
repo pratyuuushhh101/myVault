@@ -25,21 +25,21 @@ class RegisterAPIView(APIView):
         )
 
 
-class LoginAPIView(APIView):
-    permission_classes = [permissions.AllowAny]
+# class   LoginAPIView(APIView):
+#     permission_classes = [permissions.AllowAny]
 
-    def post(self, request):
-        username = request.data.get("username")
-        password = request.data.get("password")
+#     def post(self, request):
+#         username = request.data.get("username")
+#         password = request.data.get("password")
 
-        user = authenticate(username=username, password=password)
+#         user = authenticate(username=username, password=password)
 
-        if not user:
-            return Response({"error": "Invalid credentials"}, status=400)
+#         if not user:
+#             return Response({"error": "Invalid credentials"}, status=400)
 
-        refresh = RefreshToken.for_user(user)
+#         refresh = RefreshToken.for_user(user)
 
-        return Response({
-            "access": str(refresh.access_token),
-            "refresh": str(refresh)
-        })
+#         return Response({
+#             "access": str(refresh.access_token),
+#             "refresh": str(refresh)
+#         })
