@@ -33,7 +33,7 @@ class TransactionServiceTests(TestCase):
             balance=Decimal("500.00")
         )
 
-    # ---------- SUCCESS CASES ----------
+    #SUCCESS CASES
 
     def test_deposit_increases_balance(self):
         tx = process_transaction(
@@ -80,7 +80,7 @@ class TransactionServiceTests(TestCase):
         self.assertEqual(tx.sender, self.account1)
         self.assertEqual(tx.receiver, self.account2)
 
-    # ---------- DECIMAL PRECISION ----------
+    #DECIMAL PRECISION
 
     def test_amount_with_more_than_two_decimals_is_quantized(self):
         tx = process_transaction(
@@ -94,7 +94,7 @@ class TransactionServiceTests(TestCase):
         # Expect proper rounding / quantization
         self.assertEqual(self.account1.balance, Decimal("1010.99"))
 
-    # ---------- FAILURE CASES ----------
+    #FAILURE CASES
 
     def test_withdrawal_insufficient_balance_fails(self):
         with self.assertRaises(ValidationError):
