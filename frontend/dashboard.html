@@ -1,3 +1,4 @@
+
 <!DOCTYPE html>
 <html lang="en">
 <head>
@@ -7,50 +8,43 @@
 </head>
 <body class="bg-gray-900 min-h-screen p-6 text-white">
 
-  <h1 class="text-2xl mb-4">Your Accounts</h1>
-  <div id="accounts"></div>
+  <div class="flex justify-between items-center mb-6">
+    <h1 class="text-2xl">Your Accounts</h1>
+    <button onclick="logout()" class="bg-red-600 px-4 py-2 rounded">Logout</button>
+  </div>
 
-  <button onclick="logout()" class="mt-6 bg-red-600 px-4 py-2 rounded">
-    Logout
-  </button>
+  <button onclick="openCreateAccount()"
+  class="mb-6 bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-lg">
+  + Create New Account
+</button>
 
-  <script>
-    const BASE_URL = "http://127.0.0.1:8000/api";
+<div id="accounts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
 
-    async function loadAccounts() {
-      const token = localStorage.getItem("access");
-      if (!token) {
-        window.location.href = "index.html";
-        return;
-      }
+<!-- Create Account Modal -->
+<div id="createModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center">
+  <div class="bg-gray-800 p-6 rounded-xl w-80">
+    <h2 class="text-lg mb-4">Create Account</h2>
 
-      const res = await fetch(`${BASE_URL}/accounts/`, {
-        headers: { Authorization: `Bearer ${token}` },
-      });
+    <select id="accountType" class="w-full p-2 rounded text-black mb-3">
+      <option value="">Select type</option>
+      <option value="SAVINGS">Savings</option>
+      <option value="CURRENT">Current</option>
+    </select>
 
-      if (res.status === 401) {
-        localStorage.clear();
-        window.location.href = "index.html";
-        return;
-      }
+    <p id="createError" class="text-red-400 text-sm mb-2 hidden"></p>
 
-      const data = await res.json();
-      const container = document.getElementById("accounts");
+    <div class="flex gap-2">
+      <button onclick="createAccount()" class="flex-1 bg-green-600 py-2 rounded">
+        Create
+      </button>
+      <button onclick="closeCreateAccount()" class="flex-1 bg-gray-600 py-2 rounded">
+        Cancel
+      </button>
+    </div>
+  </div>
+</div>
 
-      container.innerHTML = data.map(acc => `
-        <div class="bg-gray-800 p-4 rounded mb-2">
-          <p>Type: ${acc.account_type}</p>
-          <p>Balance: ${acc.balance}</p>
-        </div>
-      `).join("");
-    }
-
-    function logout() {
-      localStorage.clear();
-      window.location.href = "index.html";
-    }
-
-    loadAccounts();
-  </script>
+<div id="accounts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
+  <script src="dashboard.js"></script>
 </body>
 </html>

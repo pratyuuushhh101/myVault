@@ -1,0 +1,32 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Account</title>
+  <script src="https://cdn.tailwindcss.com"></script>
+</head>
+<body class="bg-gray-900 min-h-screen p-6 text-white">
+
+  <button onclick="goBack()" class="mb-4 text-blue-400">← Back</button>
+
+  <h1 class="text-xl mb-2">Account</h1>
+  <p id="accountId" class="text-sm text-gray-400 mb-4"></p>
+  <p id="balance" class="text-lg mb-6"></p>
+
+  <div class="space-y-4 max-w-sm">
+    <input id="amount" placeholder="Amount" class="w-full p-2 rounded text-black" />
+
+    <button onclick="deposit()" class="w-full bg-green-600 py-2 rounded">Deposit</button>
+    <button onclick="withdraw()" class="w-full bg-yellow-600 py-2 rounded">Withdraw</button>
+
+    <input id="receiver" placeholder="Receiver Account UUID (for transfer)"
+      class="w-full p-2 rounded text-black" />
+    <button onclick="transfer()" class="w-full bg-blue-600 py-2 rounded">Transfer</button>
+
+    <p id="error" class="text-red-500 text-sm"></p>
+    <p id="success" class="text-green-500 text-sm"></p>
+  </div>
+
+  <script src="account.js"></script>
+</body>
+</html>
