@@ -43,7 +43,7 @@ class AccountBalanceAPIView(APIView):
 
     def get(self, request, account_id):
         try:
-            acc = Account.objects.get(id=account_id)
+            acc = Account.objects.get(id=account_id, user=request.user)
             return Response({"balance": acc.balance})
         except Account.DoesNotExist:
             return Response({"error": "Account not found"}, status=404)
