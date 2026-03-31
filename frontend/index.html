@@ -1,25 +1,178 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>MyVault Login</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyVault | Secure Financial Entry</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <link rel="stylesheet" href="style.css?v=3.1">
 </head>
-<body class="bg-gray-900 h-screen flex items-center justify-center">
 
-  <div class="bg-gray-800 p-8 rounded w-80">
-    <h1 class="text-white text-xl mb-4">Login</h1>
+<body class="min-h-screen border-none overflow-x-hidden theme-transition">
 
-    <input id="username" class="w-full mb-3 p-2 rounded" placeholder="Username" />
-    <input id="password" class="w-full mb-3 p-2 rounded" type="password" placeholder="Password" />
+  <!-- 🌌 IMMERSIVE BACKGROUND GLOW -->
+  <div class="fixed inset-0 z-[-1] opacity-40 blur-[100px] pointer-events-none">
+    <div class="absolute top-[-10%] left-[-10%] w-[50%] h-[50%] bg-blue-600/30 rounded-full animate-pulse"></div>
+    <div
+      class="absolute bottom-[-10%] right-[-10%] w-[40%] h-[40%] bg-blue-400/20 rounded-full animate-pulse capitalize">
+    </div>
+  </div>
 
-    <p id="error" class="text-red-500 mb-2 hidden"></p>
+  <div class="auth-grid">
+    <!-- 🏦 AUTH CONSOLE -->
+    <div class="auth-card card shadow-2xl fade-in">
+      <div class="flex flex-col items-center mb-8">
+        <h1 id="auth-title" class="text-2xl font-bold tracking-tight mb-2">Create Account</h1>
+        <p id="auth-subtitle" class="text-sm text-muted font-medium text-center">Enter your information to create a new
+          account</p>
+      </div>
 
-    <button onclick="login()" class="w-full bg-blue-600 text-white py-2 rounded">
-      Login
+      <!-- DYNAMIC FORM -->
+      <form id="auth-form" onsubmit="handleAuth(event)" class="space-y-6" novalidate>
+
+        <!-- Registration Fields (First/Last Name) -->
+        <div id="signup-name-row" class="grid grid-cols-2 gap-4 hidden">
+          <div class="input-group">
+            <label>First Name</label>
+            <div class="input-wrapper">
+              <svg class="icon-left" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <input type="text" name="first_name" placeholder="John">
+            </div>
+          </div>
+          <div class="input-group">
+            <label>Last Name</label>
+            <div class="input-wrapper">
+              <svg class="icon-left" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                  d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+              </svg>
+              <input type="text" name="last_name" placeholder="Doe">
+            </div>
+          </div>
+        </div>
+
+        <div id="email-group" class="input-group">
+          <label>Email</label>
+          <div class="input-wrapper">
+            <svg class="icon-left" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M3 8l7.89 5.26a2 2 0 002.22 0L21 8M5 19h14a2 2 0 002-2V7a2 2 0 00-2-2H5a2 2 0 00-2 2v10a2 2 0 002 2z" />
+            </svg>
+            <input type="email" name="email" placeholder="john.doe@example.com">
+          </div>
+        </div>
+
+        <div id="username-group" class="input-group">
+          <label id="username-label">Vault Username</label>
+          <div class="input-wrapper">
+            <svg id="username-icon" class="icon-left" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M16 7a4 4 0 11-8 0 4 4 0 018 0zM12 14a7 7 0 00-7 7h14a7 7 0 00-7-7z" />
+            </svg>
+            <input type="text" id="username-field" name="username" placeholder="johndoe123" required>
+          </div>
+        </div>
+
+        <div class="input-group">
+          <label>Password</label>
+          <div class="input-wrapper">
+            <svg class="icon-left" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <input type="password" id="password-field" name="password" placeholder="Create a strong password" required>
+            <svg onclick="togglePasswordVisibility('password-field')" class="icon-right opacity-40 hover:opacity-100"
+              fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
+        </div>
+
+        <!-- Confirm Password (Only for Signup) -->
+        <div id="confirm-password-group" class="input-group hidden">
+          <label>Confirm Password</label>
+          <div class="input-wrapper">
+            <svg class="icon-left" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            <input type="password" id="confirm-password-field" placeholder="Confirm your password">
+            <svg onclick="togglePasswordVisibility('confirm-password-field')"
+              class="icon-right opacity-40 hover:opacity-100" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M15 12a3 3 0 11-6 0 3 3 0 016 0z" />
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M2.458 12C3.732 7.943 7.523 5 12 5c4.478 0 8.268 2.943 9.542 7-1.274 4.057-5.064 7-9.542 7-4.477 0-8.268-2.943-9.542-7z" />
+            </svg>
+          </div>
+        </div>
+
+
+        <div id="auth-feedback" class="min-h-[1.2rem] text-[10px] font-bold uppercase tracking-widest text-center py-1">
+        </div>
+
+        <button type="submit" id="auth-submit-btn"
+          class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-xl text-sm transition-all hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.98]">Create
+          Account</button>
+      </form>
+
+      <div class="mt-8 text-center">
+        <p class="text-sm font-medium text-muted">
+          <span id="toggle-text">Already have an account?</span>
+          <button onclick="toggleAuthMode()" id="toggle-btn"
+            class="text-blue-600 dark:text-blue-400 font-bold ml-1 hover:underline transition">Sign In</button>
+        </p>
+      </div>
+    </div>
+
+    <!-- 🌓 THEME TOGGLE -->
+    <button onclick="toggleTheme()" id="theme-btn" class="fixed bottom-10 right-10 p-4">
+      <svg id="theme-icon" class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+          d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+      </svg>
     </button>
   </div>
 
-  <script src="main.js"></script>
+  <script src="index.js?v=2.7"></script>
+  <script>
+    if (localStorage.theme === 'dark') {
+      document.body.classList.add('dark');
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M3 12h2.25m.386-6.364 1.591 1.591M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />`;
+      }
+    }
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+      const icon = document.getElementById('theme-icon');
+      if (icon) {
+        icon.innerHTML = isDark
+          ? `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M3 12h2.25m.386-6.364 1.591 1.591M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />`
+          : `<path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />`;
+      }
+    }
+    function togglePasswordVisibility(id) {
+      const input = document.getElementById(id);
+      input.type = input.type === "password" ? "text" : "password";
+    }
+
+    // Initialize in Signup mode by default as per user request design
+    document.addEventListener('DOMContentLoaded', () => {
+      // We will force it to signup mode in index.js or just initialize correctly
+    });
+  </script>
 </body>
+
 </html>

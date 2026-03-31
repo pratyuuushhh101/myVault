@@ -1,50 +1,192 @@
-
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
-  <meta charset="UTF-8" />
-  <title>Dashboard</title>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>MyVault | Core Banking Dashboard</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <script>
+    tailwind.config = { darkMode: 'class' }
+  </script>
+  <link rel="stylesheet" href="style.css?v=2.5">
 </head>
-<body class="bg-gray-900 min-h-screen p-6 text-white">
 
-  <div class="flex justify-between items-center mb-6">
-    <h1 class="text-2xl">Your Accounts</h1>
-    <button onclick="logout()" class="bg-red-600 px-4 py-2 rounded">Logout</button>
-  </div>
+<body class="min-h-screen border-none overflow-x-hidden">
 
-  <button onclick="openCreateAccount()"
-  class="mb-6 bg-blue-600 hover:bg-blue-700 transition px-4 py-2 rounded-lg">
-  + Create New Account
-</button>
+  <!-- 🏦 VAULT DETAIL DRAWER (LEFT) -->
+  <div id="drawer-overlay" class="fixed inset-0 hidden bg-black/60 backdrop-blur-[1px] transition-opacity opacity-0"
+    onclick="closeAllDrawers()"></div>
 
-<div id="accounts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-
-<!-- Create Account Modal -->
-<div id="createModal" class="hidden fixed inset-0 bg-black/60 flex items-center justify-center">
-  <div class="bg-gray-800 p-6 rounded-xl w-80">
-    <h2 class="text-lg mb-4">Create Account</h2>
-
-    <select id="accountType" class="w-full p-2 rounded text-black mb-3">
-      <option value="">Select type</option>
-      <option value="SAVINGS">Savings</option>
-      <option value="CURRENT">Current</option>
-    </select>
-
-    <p id="createError" class="text-red-400 text-sm mb-2 hidden"></p>
-
-    <div class="flex gap-2">
-      <button onclick="createAccount()" class="flex-1 bg-green-600 py-2 rounded">
-        Create
-      </button>
-      <button onclick="closeCreateAccount()" class="flex-1 bg-gray-600 py-2 rounded">
-        Cancel
+  <aside id="vault-drawer" class="fixed top-0 left-0 h-full w-[380px] p-8 flex flex-col transform transition-transform">
+    <div class="flex justify-between items-center mb-12">
+      <h2 class="text-xs font-bold uppercase tracking-[0.2em] opacity-40">Vault Profile</h2>
+      <button onclick="closeAllDrawers()" class="opacity-40 hover:opacity-100 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
       </button>
     </div>
-  </div>
-</div>
+    <div id="drawer-content" class="space-y-10 flex-grow"></div>
+    <div class="pt-10 border-t">
+      <div class="bg-emerald-500/10 text-emerald-500 p-4 rounded-xl text-xs font-bold flex items-center gap-3">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500 animate-pulse"></span>
+        VAULT_SYNCED
+      </div>
+    </div>
+  </aside>
 
-<div id="accounts" class="grid grid-cols-1 sm:grid-cols-2 lg:grid-cols-3 gap-6"></div>
-  <script src="dashboard.js"></script>
+  <!-- 🕵️ OPERATION AUDIT DRAWER (RIGHT) -->
+  <aside id="audit-drawer"
+    class="fixed top-0 right-0 h-full w-[420px] p-10 flex flex-col transform transition-transform">
+    <div class="flex justify-between items-center mb-16">
+      <h2 class="text-xs font-bold uppercase tracking-[0.2em] opacity-40">Immutable Audit</h2>
+      <button onclick="closeAllDrawers()" class="opacity-40 hover:opacity-100 transition-colors">
+        <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+        </svg>
+      </button>
+    </div>
+    <div id="audit-content" class="space-y-12 flex-grow">
+      <!-- Populated by JS -->
+    </div>
+  </aside>
+
+  <!-- NAVBAR -->
+  <nav class="sticky top-0 z-50 border-b nav-bg">
+    <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+      <div class="flex justify-between h-16 items-center">
+        <div class="flex items-center gap-3">
+          <div class="bg-blue-600 p-1.5 rounded-lg">
+            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+          </div>
+          <span class="text-xl font-bold tracking-tight">MyVault</span>
+        </div>
+        <div class="flex items-center gap-6">
+          <a href="loans.html"
+            class="flex items-center gap-2 p-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-[10px] font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 8c-1.657 0-3 .895-3 2s1.343 2 3 2 3 .895 3 2-1.343 2-3 2m0-8c1.11 0 2.08.402 2.599 1M12 8V7m0 1v8m0 0v1m0-1c-1.11 0-2.08-.402-2.599-1M21 12a9 9 0 11-18 0 9 9 0 0118 0z" />
+            </svg>
+            Loans
+          </a>
+          <!-- Security Console -->
+          <button onclick="openModal('set-pin')"
+            class="flex items-center gap-2 p-2 px-3 rounded-xl bg-blue-600/10 text-blue-600 hover:bg-blue-600 hover:text-white transition-all text-[10px] font-bold uppercase tracking-widest">
+            <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+            </svg>
+            Security
+          </button>
+          <button onclick="toggleTheme()" id="theme-btn">
+            <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+            </svg>
+          </button>
+          <div class="hidden sm:flex flex-col items-end">
+            <span id="user-display" class="text-sm font-semibold">Loading...</span>
+            <span class="text-[10px] uppercase tracking-widest opacity-40 font-bold">Authenticated</span>
+          </div>
+          <button onclick="logout()"
+            class="text-xs font-bold opacity-30 hover:opacity-100 transition tracking-widest">LOGOUT</button>
+        </div>
+      </div>
+    </div>
+  </nav>
+
+  <!-- CONTENT -->
+  <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+    <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+      <div>
+        <h1 class="text-3xl font-bold tracking-tight">Finance <span class="opacity-30 font-medium">Overview</span></h1>
+        <p class="opacity-50 mt-1 font-medium">Real-time holdings audit.</p>
+      </div>
+      <div class="flex gap-3">
+        <button onclick="openModal('transfer')"
+          class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition">Send
+          Money</button>
+        <button onclick="openModal('deposit')"
+          class="btn-ui px-5 py-2.5 rounded-xl font-bold text-sm hover:opacity-80 transition">Top Up</button>
+        <button onclick="openModal('new-vault')"
+          class="bg-black text-white px-5 py-2.5 rounded-xl font-bold text-sm border hover:opacity-80 transition">New
+          Vault</button>
+      </div>
+    </div>
+
+    <!-- FINANCIAL SUMMARY BAR -->
+    <div id="summary-bar" class="grid grid-cols-1 sm:grid-cols-2 gap-6 mb-12">
+      <!-- JS Populated Summary Bar -->
+      <div class="card p-6 border-none bg-blue-600/5 animate-pulse min-h-[80px]"></div>
+      <div class="card p-6 border-none bg-blue-600/5 animate-pulse min-h-[80px]"></div>
+    </div>
+
+    <!-- ACCOUNT GRID -->
+    <section class="mb-16">
+      <h2 class="text-xs font-bold uppercase tracking-[0.2em] opacity-40 mb-6 flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-blue-500"></span> Vault Portfolio
+      </h2>
+      <div id="accounts-grid" class="grid grid-cols-1 md:grid-cols-2 lg:grid-cols-3 gap-6">
+        <div
+          class="card p-20 text-center col-span-full border-dashed opacity-50 font-bold text-xs uppercase tracking-widest">
+          Synchronizing...
+        </div>
+      </div>
+    </section>
+
+    <!-- TRANSACTION RECAP -->
+    <section>
+      <h2 class="text-xs font-bold uppercase tracking-[0.2em] opacity-40 mb-6 flex items-center gap-2">
+        <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ledger
+      </h2>
+      <div class="table-container rounded-2xl overflow-hidden shadow-sm border">
+        <div class="overflow-x-auto text-sm">
+          <table class="w-full text-left">
+            <thead class="thead-bg border-b text-[11px] font-bold uppercase tracking-[0.15em]">
+              <tr>
+                <th class="px-6 py-5">Date</th>
+                <th class="px-6 py-5">Transaction Type</th>
+                <th class="px-6 py-5 text-right">Volume (₹)</th>
+              </tr>
+            </thead>
+            <tbody id="transactions-table" class="divide-y opacity-90">
+              <tr>
+                <td colspan="3" class="px-6 py-10 text-center opacity-40 italic">Initalizing Ledger Scan...</td>
+              </tr>
+            </tbody>
+          </table>
+        </div>
+      </div>
+    </section>
+  </main>
+
+  <!-- ACTION MODAL -->
+  <div id="modal-container" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
+    <div class="card w-full max-w-lg p-10 shadow-2xl relative">
+      <div class="flex justify-between items-center mb-8">
+        <h3 id="modal-title" class="text-xl font-bold">Operation</h3>
+        <button onclick="closeModal()" class="opacity-50 hover:opacity-100">
+          <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+          </svg>
+        </button>
+      </div>
+      <form id="action-form" onsubmit="handleFormSubmit(event)" class="space-y-6">
+        <div id="modal-fields" class="space-y-5"></div>
+        <div id="modal-feedback" class="min-h-[1.5rem]"></div>
+        <button type="submit" id="modal-btn"
+          class="w-full bg-blue-600 text-white font-bold py-4 rounded-xl text-xs uppercase tracking-widest hover:opacity-90 transition">Confirm
+          Operation</button>
+      </form>
+    </div>
+  </div>
+
+  <script src="dashboard.js?v=2.4"></script>
 </body>
+
 </html>
