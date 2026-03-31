@@ -1,97 +1,102 @@
 from rest_framework import serializers
-from accounts.models import Transaction,Account,User
+from rest_framework_simplejwt.serializers import TokenObtainPairSerializer
+from django.contrib.auth import authenticate
+from django.db.models import Q
+from rest_framework import exceptions
+from .models import Account, Transaction, User, Loan
+from decimal import Decimal
 
+class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
+    def validate(self, attrs):
+        identity = attrs.get('username')
+        password = attrs.get('password')
 
-class TransactionCreateSerializer(serializers.Serializer):
-    """
-    Validates API input before calling the transaction service.
-    Does NOT touch the database.
-    """
+        if not identity or not password:
+            raise exceptions.AuthenticationFailed('Both username/email and password are required.')
 
-    transaction_type = serializers.ChoiceField(
-        choices=Transaction.TransactionType.choices
-    )
+        # Attempt to find user by username or email
+        user = User.objects.filter(Q(username=identity) | Q(email=identity)).first()
 
-    amount = serializers.CharField()
+        if user and user.check_password(password):
+            if not user.is_active:
+                raise exceptions.AuthenticationFailed('User account is disabled.')
+            
+            # Pass correct internal username to parent for token generation
+            attrs['username'] = user.username
+            return super().validate(attrs)
+        
+        raise exceptions.AuthenticationFailed('No active account found with the given credentials.')
 
-    sender_id = serializers.UUIDField(
-        required=False,
-        allow_null=True
-    )
-
-    receiver_id = serializers.UUIDField(
-        required=False,
-        allow_null=True
-    )
-
-    description = serializers.CharField(
-        required=False,
-        allow_blank=True
-    )
-
-    def validate(self, data):
-        tx_type = data["transaction_type"]
-        sender = data.get("sender_id")
-        receiver = data.get("receiver_id")
-
-        if tx_type == Transaction.TransactionType.DEPOSIT:
-            if receiver is None or sender is not None:
-                raise serializers.ValidationError(
-                    "Deposit requires only a receiver account."
-                )
-
-        elif tx_type == Transaction.TransactionType.WITHDRAWAL:
-            if sender is None or receiver is not None:
-                raise serializers.ValidationError(
-                    "Withdrawal requires only a sender account."
-                )
-
-        elif tx_type == Transaction.TransactionType.TRANSFER:
-            if sender is None or receiver is None:
-                raise serializers.ValidationError(
-                    "Transfer requires both sender and receiver."
-                )
-            if sender == receiver:
-                raise serializers.ValidationError(
-                    "Sender and receiver cannot be the same."
-                )
-
-        return data
-
-class TransactionResponseSerializer(serializers.ModelSerializer):
-    sender_id = serializers.UUIDField(source="sender.id", allow_null=True)
-    receiver_id = serializers.UUIDField(source="receiver.id", allow_null=True)
-
-    class Meta:
-        model = Transaction
-        fields = [
-            "id",
-            "transaction_type",
-            "amount",
-            "sender_id",
-            "receiver_id",
-            "description",
-            "created_at",
-        ]
-
-class AccountCreateSerializer(serializers.ModelSerializer):
-    class Meta:
-        model = Account
-        fields = ["id", "account_type"]
-        read_only_fields = ["id"]
-
-
-class RegisterSerializer(serializers.ModelSerializer):
+class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)
 
     class Meta:
         model = User
-        fields = ("id", "email", "username", "password")
+        fields = ('id', 'username', 'email', 'password')
 
     def create(self, validated_data):
-        password = validated_data.pop("password")
-        user = User(**validated_data)
-        user.set_password(password)
+        user = User.objects.create_user(**validated_data)
         user.save()
         return user
 
+
+# --- LOAN SERIALIZERS ---
+
+class LoanSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Loan
+        fields = [
+            'id', 'loan_type', 'amount', 
+            'remaining_amount', 'status', 'created_at'
+        ]
+        read_only_fields = fields
+
+
+class LoanCreateSerializer(serializers.Serializer):
+    account_id = serializers.UUIDField(required=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal('100.00'))
+    loan_type = serializers.ChoiceField(choices=Loan.LoanType.choices)
+    pin = serializers.CharField(write_only=True, min_length=4, max_length=6, required=True)
+
+
+class LoanRepaymentSerializer(serializers.Serializer):
+    loan_id = serializers.UUIDField(required=True)
+    account_id = serializers.UUIDField(required=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal('0.01'), required=True)
+    pin = serializers.CharField(write_only=True, min_length=4, max_length=6, required=True)
+
+
+# --- ACCOUNT SERIALIZERS ---
+class AccountSerializer(serializers.ModelSerializer):
+    class Meta:
+        model = Account
+        fields = ['id', 'account_type', 'balance', 'created_at']
+        read_only_fields = ['id', 'balance', 'created_at']
+
+
+# --- TRANSACTION SERIALIZERS ---
+class TransactionHistorySerializer(serializers.ModelSerializer):
+    sender_account = serializers.CharField(source='sender.id', read_only=True)
+    receiver_account = serializers.CharField(source='receiver.id', read_only=True)
+
+    class Meta:
+        model = Transaction
+        fields = ['id', 'transaction_type', 'amount', 'sender_account', 'receiver_account', 'created_at']
+
+
+class DepositWithdrawSerializer(serializers.Serializer):
+    account_id = serializers.UUIDField(required=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal('0.01'), required=True)
+    pin = serializers.CharField(write_only=True, min_length=4, max_length=6, required=True)
+
+
+class TransferSerializer(serializers.Serializer):
+    sender_id = serializers.UUIDField(required=True)
+    receiver_id = serializers.UUIDField(required=True)
+    amount = serializers.DecimalField(max_digits=12, decimal_places=2, min_value=Decimal('0.01'), required=True)
+    pin = serializers.CharField(write_only=True, min_length=4, max_length=6, required=True)
+
+    def validate(self, data):
+        if data['sender_id'] == data['receiver_id']:
+            raise serializers.ValidationError("Sender and receiver account cannot be the same.")
+        return data
