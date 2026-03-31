@@ -1,0 +1,394 @@
+@import url('https://fonts.googleapis.com/css2?family=Inter:wght@400;500;600;700&display=swap');
+
+/* 🌓 MyVault Unified Style System (v2.9) */
+
+:root {
+    --primary: #1E293B;
+    --accent: #2563EB;
+    --background: #F8FAFC;
+    --card-bg: #FFFFFF;
+    --text-main: #0F172A;
+    --text-muted: #64748B;
+    --border: #E2E8F0;
+    --white: #FFFFFF;
+    --thead-bg: #F8FAFC;
+}
+
+/* 🌑 HIGH-CONTRAST DARK MODE */
+body.dark {
+    --primary: #FFFFFF;
+    --accent: #3B82F6;
+    --background: #000000;
+    --card-bg: #0A0A0A;
+    --text-main: #FFFFFF;
+    --text-muted: #CBD5E1;
+    --border: #262626;
+    --white: #0A0A0A;
+    --thead-bg: #1A1A1A;
+}
+
+body {
+    font-family: 'Inter', sans-serif;
+    background-color: var(--background);
+    color: var(--text-main);
+    transition: background-color 0.2s, color 0.1s;
+}
+
+/* 🧼 SEMANTIC UTILITIES */
+.nav-bg {
+    background-color: var(--card-bg);
+    border-bottom: 1px solid var(--border);
+}
+
+.bg-card {
+    background-color: var(--card-bg);
+}
+
+.text-muted {
+    color: var(--text-muted);
+}
+
+.card,
+.table-container,
+.btn-ui {
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 16px;
+}
+
+.thead-bg {
+    background-color: var(--thead-bg);
+    border-bottom: 1px solid var(--border);
+    color: var(--text-main);
+}
+
+/* 🕵️ TABLE FORMATTING */
+table {
+    border-collapse: collapse;
+    width: 100%;
+    font-variant-numeric: tabular-nums;
+}
+
+th {
+    padding: 16px 24px;
+    color: var(--text-main);
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    font-weight: 700;
+}
+
+td {
+    padding: 16px 24px;
+    color: var(--text-muted);
+    border-bottom: 1px solid var(--border);
+    transition: background-color 0.2s;
+}
+
+.hover-row {
+    cursor: pointer;
+}
+
+.hover-row:hover {
+    background-color: rgba(255, 255, 255, 0.05);
+}
+
+body:not(.dark) .hover-row:hover {
+    background-color: #F8FAFC;
+}
+
+/* 🛡️ AUTH CONSOLE (LANDING PAGE) */
+.auth-grid {
+    min-height: 100vh;
+    display: flex;
+    align-items: center;
+    justify-content: center;
+    padding: 2rem;
+}
+
+.auth-card {
+    width: 100%;
+    max-width: 440px;
+    padding: 3rem 2.5rem;
+    position: relative;
+    overflow: visible;
+}
+
+.auth-card::before {
+    content: '';
+    position: absolute;
+    inset: -1px;
+    background: linear-gradient(to right, rgba(37, 99, 235, 0.1), transparent, rgba(37, 99, 235, 0.1));
+    z-index: -1;
+    border-radius: 17px;
+    pointer-events: none;
+}
+
+/* 🔍 INPUT ICON ARCHITECTURE */
+.input-group {
+    display: flex;
+    flex-direction: column;
+    gap: 0.5rem;
+}
+
+.input-group label {
+    font-size: 0.875rem;
+    font-weight: 500;
+    color: var(--text-main);
+}
+
+.input-wrapper {
+    position: relative;
+    display: flex;
+    align-items: center;
+}
+
+.input-wrapper input {
+    width: 100%;
+    padding: 0.625rem 1rem 0.625rem 2.75rem;
+    background-color: var(--card-bg);
+    border: 1px solid var(--border);
+    border-radius: 0.75rem;
+    font-size: 0.875rem;
+    transition: all 0.2s cubic-bezier(0.4, 0, 0.2, 1);
+    color: var(--text-main);
+}
+
+.input-wrapper input:focus {
+    outline: none;
+    border-color: var(--accent);
+    box-shadow: 0 0 0 4px rgba(37, 99, 235, 0.08);
+}
+
+.input-wrapper .icon-left {
+    position: absolute;
+    left: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: var(--text-muted);
+    pointer-events: none;
+}
+
+.input-wrapper .icon-right {
+    position: absolute;
+    right: 1rem;
+    top: 50%;
+    transform: translateY(-50%);
+    width: 1rem;
+    height: 1rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    transition: color 0.2s;
+}
+
+.input-wrapper .icon-right:hover {
+    color: var(--text-main);
+}
+
+.dark .input-wrapper input {
+    background-color: rgba(255, 255, 255, 0.03);
+}
+
+/* 💠 CHECKBOX PREMIUM */
+.checkbox-group {
+    display: flex;
+    align-items: center;
+    gap: 0.75rem;
+    cursor: pointer;
+    margin-top: 0.5rem;
+}
+
+.checkbox-group input {
+    width: 1.125rem;
+    height: 1.125rem;
+    accent-color: var(--accent);
+}
+
+.checkbox-group label {
+    font-size: 0.875rem;
+    color: var(--text-muted);
+    cursor: pointer;
+    line-height: 1.25;
+}
+
+/* 🔩 SIDEBARS ENGINE (DUAL CHANNEL) */
+aside {
+    position: fixed;
+    top: 0;
+    height: 100%;
+    background-color: var(--card-bg);
+    color: var(--text-main);
+    transition: transform 0.4s cubic-bezier(0.4, 0, 0.2, 1);
+    z-index: 70;
+}
+
+/* Left Sidebar (Vaults) */
+#vault-drawer {
+    left: 0;
+    width: 380px;
+    transform: translateX(-100%);
+    border-right: 1px solid var(--border);
+}
+
+.drawer-left-active #vault-drawer {
+    transform: translateX(0);
+}
+
+/* Right Sidebar (Operations) */
+#audit-drawer {
+    right: 0;
+    width: 420px;
+    transform: translateX(100%);
+    border-left: 1px solid var(--border);
+}
+
+.drawer-right-active #audit-drawer {
+    transform: translateX(0);
+}
+
+#drawer-overlay {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.6);
+    backdrop-filter: blur(2px);
+    z-index: 60;
+    transition: opacity 0.3s ease;
+}
+
+/* 🌑 INPUTS */
+input::placeholder {
+    color: var(--text-muted);
+    opacity: 0.5;
+}
+
+/* 🌑 SELECT & INPUT THEME OVERRIDES */
+select,
+option {
+    background-color: inherit;
+    color: inherit;
+}
+
+.dark select {
+    background-color: #1a1a1a !important;
+    color: #f8fafc !important;
+}
+
+.dark option {
+    background-color: #1a1a1a !important;
+    color: #f8fafc !important;
+}
+
+.dark input::placeholder {
+    color: rgba(255, 255, 255, 0.2);
+}
+
+input:focus {
+    border-color: var(--accent);
+    box-shadow: 0 0 0 2px rgba(37, 99, 235, 0.1);
+}
+
+body.dark input:focus {
+    box-shadow: 0 0 0 2px rgba(59, 130, 246, 0.2);
+}
+
+/* 👔 ACTIONS & MODALS */
+#modal-container {
+    position: fixed;
+    inset: 0;
+    background-color: rgba(0, 0, 0, 0.85);
+    backdrop-filter: blur(2px);
+    z-index: 100;
+}
+
+#modal-container:not(.hidden) {
+    display: flex;
+    align-items: center;
+    justify-content: center;
+}
+
+.btn-primary,
+.bg-blue-600 {
+    background-color: var(--accent);
+    color: white;
+    font-weight: 700;
+    padding: 16px;
+    border-radius: 14px;
+    width: 100%;
+    text-transform: uppercase;
+    font-size: 11px;
+    letter-spacing: 0.15em;
+    transition: all 0.2s;
+    cursor: pointer;
+}
+
+.btn-primary:hover {
+    opacity: 0.9;
+    transform: translateY(-1px);
+}
+
+/* 🌑 FORCED CONTRAST UTILS */
+.bg-black {
+    background-color: #1A1A1A;
+    border: 1px solid var(--border);
+}
+
+body.dark .bg-black {
+    background-color: #262626;
+    color: #FFFFFF;
+}
+
+.border-b {
+    border-bottom: 1px solid var(--border);
+}
+
+.border-t {
+    border-top: 1px solid var(--border);
+}
+
+.fade-in {
+    animation: fadeIn 0.4s ease-out;
+}
+
+@keyframes fadeIn {
+    from {
+        opacity: 0;
+        transform: translateY(10px);
+    }
+
+    to {
+        opacity: 1;
+        transform: translateY(0);
+    }
+}
+
+/* 🌗 THEME ENGINE STYLING */
+#theme-btn {
+    background-color: rgba(0, 0, 0, 0.05);
+    border: 1px solid rgba(0, 0, 0, 0.05);
+    color: #64748b;
+    transition: all 0.3s cubic-bezier(0.4, 0, 0.2, 1);
+    padding: 0.5rem;
+    border-radius: 0.75rem;
+}
+
+#theme-btn:hover {
+    background-color: rgba(37, 99, 235, 0.1);
+    color: #2563eb;
+    transform: translateY(-1px) scale(1.05);
+}
+
+.dark #theme-btn {
+    background-color: rgba(255, 255, 255, 0.03);
+    border: 1px solid rgba(255, 255, 255, 0.05);
+    color: #94a3b8;
+    box-shadow: 0 0 15px rgba(0, 0, 0, 0.2);
+}
+
+.dark #theme-btn:hover {
+    background-color: rgba(255, 255, 255, 0.07);
+    color: #fbbf24;
+    /* Amber glow for sun */
+    box-shadow: 0 0 20px rgba(251, 191, 36, 0.1);
+}

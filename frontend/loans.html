@@ -1,0 +1,160 @@
+<!DOCTYPE html>
+<html lang="en">
+
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>MyVault | Loan Management</title>
+    <script src="https://cdn.tailwindcss.com"></script>
+    <script>
+        tailwind.config = { darkMode: 'class' }
+    </script>
+    <link rel="stylesheet" href="style.css?v=3.0">
+</head>
+
+<body class="min-h-screen border-none overflow-x-hidden theme-transition">
+
+    <!-- 🏦 LOAN DETAIL DRAWER (LEFT) -->
+    <div id="drawer-overlay"
+        class="fixed inset-0 hidden bg-black/60 backdrop-blur-[1px] transition-opacity opacity-0 z-[100]"
+        onclick="closeLoanDrawer()"></div>
+
+    <aside id="vault-drawer"
+        class="fixed top-0 left-0 h-full w-[380px] p-8 flex flex-col transform transition-transform z-[110]">
+        <div class="flex justify-between items-center mb-12">
+            <h2 class="text-[10px] font-black uppercase tracking-[0.2em] opacity-30">Institutional Audit</h2>
+            <button onclick="closeLoanDrawer()" class="opacity-30 hover:opacity-100 transition-opacity">
+                <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                    <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M6 18L18 6M6 6l12 12" />
+                </svg>
+            </button>
+        </div>
+        <div id="drawer-content" class="space-y-10 flex-grow">
+            <!-- Rendered by JS -->
+        </div>
+    </aside>
+
+    <!-- NAVBAR -->
+    <nav class="sticky top-0 z-50 border-b nav-bg">
+        <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
+            <div class="flex justify-between h-16 items-center">
+                <div class="flex items-center gap-3">
+                    <a href="dashboard.html" class="flex items-center gap-3">
+                        <div class="bg-blue-600 p-1.5 rounded-lg">
+                            <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                                <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                    d="M12 15v2m-6 4h12a2 2 0 002-2v-6a2 2 0 00-2-2H6a2 2 0 00-2 2v6a2 2 0 002 2zm10-10V7a4 4 0 00-8 0v4h8z" />
+                            </svg>
+                        </div>
+                        <span class="text-xl font-bold tracking-tight">MyVault</span>
+                    </a>
+                </div>
+                <div class="flex items-center gap-6">
+                    <a href="dashboard.html"
+                        class="text-xs font-bold opacity-50 hover:opacity-100 uppercase tracking-widest transition">Dashboard</a>
+                    <button onclick="toggleTheme()" id="theme-btn">
+                        <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                                d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z">
+                            </path>
+                        </svg>
+                    </button>
+                    <div class="hidden sm:flex flex-col items-end">
+                        <span id="user-display" class="text-sm font-semibold">Loading...</span>
+                    </div>
+                    <button onclick="logout()"
+                        class="text-xs font-bold opacity-30 hover:opacity-100 transition tracking-widest">LOGOUT</button>
+                </div>
+            </div>
+        </div>
+    </nav>
+
+    <!-- CONTENT -->
+    <main class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8 py-10">
+        <div class="flex flex-col md:flex-row justify-between items-start md:items-end gap-6 mb-12">
+            <div>
+                <h1 class="text-4xl font-extrabold tracking-tight">Loan <span
+                        class="opacity-30 font-medium">Console</span></h1>
+                <p class="opacity-50 mt-1 font-medium font-inter">Manage your active leverage and institutional debt.
+                </p>
+            </div>
+            <div class="flex gap-3">
+                <button onclick="openLoanModal('apply')"
+                    class="bg-blue-600 text-white px-6 py-3 rounded-xl font-bold text-xs uppercase tracking-widest hover:bg-blue-700 shadow-lg shadow-blue-600/20 active:scale-[0.98] transition-all">Provision
+                    New Loan</button>
+            </div>
+        </div>
+
+        <!-- LOAN SUMMARY -->
+        <div id="loan-summary-grid" class="grid grid-cols-1 md:grid-cols-3 gap-6 mb-12">
+            <!-- JS Populated Summary Cards -->
+        </div>
+
+        <!-- ACTIVE LOANS TABLE -->
+        <section>
+            <h2 class="text-[10px] font-extrabold uppercase tracking-[0.25em] opacity-30 mb-6 flex items-center gap-2">
+                <span class="w-2 h-2 rounded-full bg-blue-500"></span> Institutional Debt Ledger
+            </h2>
+            <div
+                class="table-container shadow-2xl shadow-black/5 overflow-hidden border-none bg-white dark:bg-[#0A0A0A] rounded-2xl">
+                <div class="overflow-x-auto">
+                    <table class="w-full text-left">
+                        <thead
+                            class="thead-bg border-b border-white/5 text-[10px] font-black uppercase tracking-[0.2em] opacity-60">
+                            <tr>
+                                <th class="px-6 py-6">Loan Identity</th>
+                                <th class="px-6 py-6">Type</th>
+                                <th class="px-6 py-6">Principal (₹)</th>
+                                <th class="px-6 py-6">Remaining (₹)</th>
+                                <th class="px-6 py-6">Status</th>
+                                <th class="px-6 py-6 text-right">Operations</th>
+                            </tr>
+                        </thead>
+                        <tbody id="loans-table" class="divide-y divide-white/5 opacity-90">
+                            <tr>
+                                <td colspan="6" class="px-6 py-16 text-center opacity-40 italic font-medium">Scanning
+                                    institutional records...</td>
+                            </tr>
+                        </tbody>
+                    </table>
+                </div>
+            </div>
+        </section>
+    </main>
+
+    <!-- MODAL -->
+    <div id="loan-modal"
+        class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
+        <div class="card w-full max-w-lg p-10 shadow-2xl relative border-none bg-white dark:bg-[#0A0A0A]">
+            <div class="flex justify-between items-center mb-8">
+                <h3 id="modal-title" class="text-2xl font-extrabold tracking-tight">Provision Loan</h3>
+                <button onclick="closeLoanModal()" class="opacity-30 hover:opacity-100 transition-opacity">
+                    <svg class="w-6 h-6" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+                        <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                            d="M6 18L18 6M6 6l12 12" />
+                    </svg>
+                </button>
+            </div>
+            <form id="loan-form" onsubmit="handleLoanSubmit(event)" class="space-y-6">
+                <div id="modal-fields" class="space-y-5">
+                    <!-- Dynamic Fields -->
+                </div>
+                <div id="modal-feedback" class="min-h-[1.5rem]"></div>
+                <button type="submit" id="loan-submit-btn"
+                    class="w-full bg-blue-600 text-white font-bold py-5 rounded-2xl text-[10px] uppercase tracking-widest hover:opacity-90 shadow-xl shadow-blue-600/20 active:scale-[0.98] transition-all">Confirm
+                    Obligation</button>
+            </form>
+        </div>
+    </div>
+
+    <script src="loans.js?v=1.1"></script>
+    <script>
+        if (localStorage.theme === 'dark') document.body.classList.add('dark');
+        function toggleTheme() {
+            const isDark = document.body.classList.toggle('dark');
+            localStorage.setItem('theme', isDark ? 'dark' : 'light');
+        }
+    </script>
+</body>
+
+</html>
