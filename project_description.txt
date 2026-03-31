@@ -1,0 +1,72 @@
+# 🏛️ MyVault: Institutional Banking Engine (Technical Specification v3.2)
+
+## 📖 Executive Summary
+MyVault is a multi-user, mission-critical financial ecosystem designed for secure account management, high-concurrency fund movements, and integrated debt provisioning. It combines the rigorous data isolation of a core banking system with the modern accessibility of a high-fidelity dashboard. Key features include atomic transaction integrity, mandatory secondary security handshakes, and institutional-grade fiscal oversight.
+
+---
+
+## 🏗️ Core Architecture (Backend)
+
+### 1. Unified Data Layer (`models.py`)
+- **`User` Model**: Extends `AbstractUser`. Stores primary identity, email, phone, and PBKDF2-hashed `transaction_pin`. Ensures unique `email` and `username`.
+- **`Account` Model**: Represents a liquidity vault. Each account has a `UUID` primary key, `balance` (Decimal), `account_type` (SAVINGS, CURRENT), and is linked to a `User` owner.
+- **`Transaction` Model**: The ledger. Records `transaction_type` (DEPOSIT, WITHDRAWAL, TRANSFER), `amount`, `sender` and `receiver` pointers, and an optional `description`.
+- **`Loan` Model**: Manages institutional debt. Stores `loan_type` (HOME, PERSONAL, EDUCATION), total `amount`, `interest_rate`, `tenure_months`, and `remaining_amount`.
+
+### 2. The Financial Brain (`services.py`)
+- **`TransactionEngine`**: Handles all liquidity state changes. Uses `transaction.atomic()` to ensure all-or-nothing execution. Employs `select_for_update()` to lock account rows in PostgreSQL, preventing race conditions or double-spending during simultaneous transfers.
+- **`LoanService`**: Manages the debt lifecycle. Handles the provision of new credit by creating `Loan` records and injecting liquidity into target accounts atomically. Manages settlements by reducing debt structure and verifying account ownership.
+
+### 3. API Serialization & Auth (`serializers.py`)
+- **`UserRegistrationSerializer`**: Facilitates account provisioning by capturing biological/contact identity (Email, First/Last Name) and account identity (Username).
+- **`LoginAPIView` & `CustomTokenObtainPairSerializer`**: Supports dual-identification (Email or Username) to issue JWT `access` and `refresh` tokens.
+- **Transaction Serializers**: Enforce secondary `PIN` validation at the API layer for all `deposit`, `withdraw`, and `transfer` operations.
+- **Loan Serializers**: Standardize debt provisioning and track repayment progress through structured output.
+
+---
+
+## 🌐 Presentation Layer (Frontend)
+
+### 1. High-Fidelity Design System
+- **Framework**: Vanilla HTML5 + JavaScript + Tailwind CSS (Optimized for dark mode).
+- **Theme Persistence**: A centralized theme engine (`toggleTheme`) ensures preference persistence via `localStorage` and provides a consistent premium dark-mode transition across all pages.
+
+### 2. Operational Consoles
+- **`index.html` (Auth Portal)**: Features a high-fidelity "shadcn-inspired" registration form with multi-column layouts, iconography integration, and password visibility controls.
+- **`dashboard.html` (Command Unit)**:
+    - **Total Wealth Bar**: Real-time aggregation of Liquid Assets and Debt Exposure.
+    - **Account Grid**: Dynamic cards for individual vault management.
+    - **Transaction Ledger**: Searchable, time-stamped history of all core operations.
+- **`loans.html` (LMS Console)**: Dedicated workspace for debt management, including a "Debt Ledger" and an interactive **Audit Drawer** for deep-dive loan analysis.
+- **`account.html` (Vertical History)**: Focused view of specific account histories with advanced status indicators and amount-specific coloring (Sign-based).
+
+### 3. State & Feedback Mutex
+- **Processing States**: JavaScript `handleFormSubmit` and `handleAuth` implement a "Mutex" - disabling submission interfaces and displaying placeholder animation ("Establishing Secure Link...") during active API handshakes.
+- **Success/Error Signatures**: Integrated `showFeedback` and `parseApiError` utilities provide human-readable, contextually-relevant error messaging (e.g., "Security Mismatch" or "Insufficient Liquidity").
+
+---
+
+## 🛡️ Security Protocol (The Three-Lock Mutex)
+
+For any state change (Transfer, Loan Repayment, Account Closure), MyVault enforces:
+1. **Identity Lock**: Verified JWT Bearer token confirms the actor is authenticated.
+2. **Ownership Lock**: Server-side checks ensure the actor owns the source/target account UUIDs.
+3. **Authorization Lock**: The secondary hashed `transaction_pin` must match the encrypted record in PostgreSQL to commit any delta to the account balance.
+
+---
+
+## 🚀 Execution & DevOps
+
+### 🛠️ Local Initialization
+- **Environment**: Managed using `python-dotenv` / `django-environ`.
+- **Database Hooks**: PostgreSQL (Neon Cloud) ensures cloud-scale availability and robust ACID compliance.
+- **Server Spin-up**:
+  - Backend: `python manage.py runserver` (Defaults to PORT 8000).
+  - Frontend: `python3 -m http.server 8080` (From the `frontend/` directory).
+
+### 🧪 Quality Assurance
+Maintain system integrity by executing the automated test suite:
+- **`python manage.py test accounts`**: Validates the Banking Engine, LMS flows, and Transaction atomicity.
+
+---
+*Documentation Source of Truth for MyVault System Integrity (v3.2)*
