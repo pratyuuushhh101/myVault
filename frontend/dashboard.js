@@ -340,6 +340,18 @@ function openModal(type) {
                        class="w-full p-4 card text-center tracking-[1em] font-mono" style="-webkit-text-security: disc;">
             </div>
         `;
+  } else if (type === 'withdraw') {
+    title.textContent = "Vault Liquidation";
+    fields.innerHTML = `
+            <div class="space-y-4">
+                <select name="account_id" class="w-full p-4 card font-bold text-xs">
+                    ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} - ₹${a.balance}</option>`).join('')}
+                </select>
+                <input name="amount" type="number" step="0.01" placeholder="Volume (₹)" class="w-full p-4 card font-bold" required>
+                <input type="password" name="pin" maxlength="4" placeholder="•••• PIN" required 
+                       class="w-full p-4 card text-center tracking-[1em] font-mono" style="-webkit-text-security: disc;">
+            </div>
+        `;
   } else if (type === 'set-pin') {
     title.textContent = "Security Console";
     fields.innerHTML = `
@@ -368,9 +380,10 @@ async function handleFormSubmit(e) {
     submitBtn.textContent = "Processing...";
 
     let endpoint = (activeModalType === 'transfer') ? ENDPOINTS.transfer
-      : (activeModalType === 'deposit') ? ENDPOINTS.deposit
-        : (activeModalType === 'set-pin') ? ENDPOINTS.setPin
-          : ENDPOINTS.accounts;
+      : (activeModalType === 'withdraw') ? ENDPOINTS.withdraw
+        : (activeModalType === 'deposit') ? ENDPOINTS.deposit
+          : (activeModalType === 'set-pin') ? ENDPOINTS.setPin
+            : ENDPOINTS.accounts;
     await coreFetch(endpoint, { method: 'POST', body: JSON.stringify(body) });
 
     const successMsg = (activeModalType === 'set-pin') ? "Security Synchronized." : "Operation Confirmed.";

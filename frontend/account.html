@@ -1,32 +1,126 @@
 <!DOCTYPE html>
 <html lang="en">
+
 <head>
   <meta charset="UTF-8" />
-  <title>Account</title>
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>MyVault Account | Real-time History</title>
   <script src="https://cdn.tailwindcss.com"></script>
+  <link rel="stylesheet" href="style.css?v=2.0">
 </head>
-<body class="bg-gray-900 min-h-screen p-6 text-white">
 
-  <button onclick="goBack()" class="mb-4 text-blue-400">← Back</button>
+<body class="bg-slate-50 min-h-screen text-slate-900 fade-in">
 
-  <h1 class="text-xl mb-2">Account</h1>
-  <p id="accountId" class="text-sm text-gray-400 mb-4"></p>
-  <p id="balance" class="text-lg mb-6"></p>
+  <nav class="bg-white border-b border-slate-200 py-4 shadow-sm mb-10">
+    <div class="max-w-5xl mx-auto px-6 flex justify-between items-center">
+      <a href="dashboard.html"
+        class="flex items-center gap-2 text-xl font-bold text-slate-800 tracking-tight transition hover:text-blue-600">
+        <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+          <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
+        </svg>
+        MyVault <span class="font-normal text-slate-500">Bank</span>
+      </a>
+      <div class="flex items-center gap-6">
+        <a href="loans.html"
+          class="text-xs font-bold text-slate-500 hover:text-blue-600 transition uppercase tracking-widest">Loans</a>
+        <button onclick="toggleTheme()" id="theme-btn">
+          <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+            <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+              d="M20.354 15.354A9 9 0 018.646 3.646 9.003 9.003 0 0012 21a9.003 9.003 0 008.354-5.646z"></path>
+          </svg>
+        </button>
+        <button onclick="logout()"
+          class="text-sm font-bold text-slate-400 hover:text-red-600 transition tracking-widest py-2">LOGOUT</button>
+      </div>
+    </div>
+  </nav>
 
-  <div class="space-y-4 max-w-sm">
-    <input id="amount" placeholder="Amount" class="w-full p-2 rounded text-black" />
+  <main class="max-w-5xl mx-auto px-6 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
+    <div>
+      <div class="mb-10">
+        <h2 class="text-3xl font-bold tracking-tight text-slate-800">History <span
+            class="font-normal text-slate-500">Ledger</span></h2>
+        <p class="text-sm text-slate-500 font-medium">Verified and immutable transactions linked to this vault.</p>
+      </div>
 
-    <button onclick="deposit()" class="w-full bg-green-600 py-2 rounded">Deposit</button>
-    <button onclick="withdraw()" class="w-full bg-yellow-600 py-2 rounded">Withdraw</button>
+      <div id="history-list" class="space-y-4">
+        <!-- History JS will populate this -->
+        <div class="card animate-pulse py-40 w-full border-dashed border-2 flex items-center justify-center">
+          <p class="text-slate-300 font-bold uppercase tracking-widest text-xs">Accessing Secure History...</p>
+        </div>
+      </div>
+    </div>
 
-    <input id="receiver" placeholder="Receiver Account UUID (for transfer)"
-      class="w-full p-2 rounded text-black" />
-    <button onclick="transfer()" class="w-full bg-blue-600 py-2 rounded">Transfer</button>
+    <div>
+      <div class="sticky top-10">
+        <div class="card shadow-md">
+          <h3 class="text-xl font-bold text-slate-800 mb-6 flex items-center gap-2">
+            <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
+              <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
+                d="M8 7h12m0 0l-4-4m4 4l-4 4m0 6H4m0 0l4 4m-4-4l4-4"></path>
+            </svg>
+            Transfer <span class="font-normal text-slate-500">Funds</span>
+          </h3>
 
-    <p id="error" class="text-red-500 text-sm"></p>
-    <p id="success" class="text-green-500 text-sm"></p>
-  </div>
+          <form onsubmit="event.preventDefault(); initiateTransfer()" class="space-y-6">
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 ml-1">Destination
+                Account ID</label>
+              <input id="receiver_id"
+                class="px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 transition-all font-mono text-sm tracking-tighter"
+                placeholder="550e8400-e29b-41d4-a716-446655440000" required />
+            </div>
 
-  <script src="account.js"></script>
+            <div class="grid grid-cols-2 gap-4">
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 ml-1">Amount
+                  (₹)</label>
+                <input id="amount" type="number" step="0.01"
+                  class="px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 transition-all font-bold text-slate-800 text-lg"
+                  placeholder="0.00" required />
+              </div>
+              <div>
+                <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 ml-1">Source
+                  Vault</label>
+                <input id="sender_id"
+                  class="px-3 py-3 rounded-lg border border-slate-100 bg-slate-50 text-slate-400 font-mono text-xs italic tracking-tighter"
+                  readonly />
+              </div>
+            </div>
+
+            <div>
+              <label class="block text-xs font-bold uppercase tracking-widest text-slate-400 mb-2 ml-1">Private
+                Description</label>
+              <input id="description"
+                class="px-4 py-3 rounded-lg border border-slate-200 outline-none focus:ring-2 focus:ring-blue-600/10 focus:border-blue-600 transition-all text-sm font-medium"
+                placeholder="Payment memo" />
+            </div>
+
+            <button id="transfer-btn" type="submit"
+              class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 transition shadow-sm shadow-blue-500/20 active:scale-[0.98]">
+              Execute Transfer
+            </button>
+            <div id="transfer-feedback" class="text-center min-h-[1.5rem]">
+              <!-- Success/Error messages appear here -->
+            </div>
+            <p
+              class="text-center text-[10px] text-slate-400 uppercase tracking-tighter font-bold border-t border-slate-50 pt-4">
+              Real-time row-level concurrency isolation
+            </p>
+          </form>
+        </div>
+      </div>
+    </div>
+  </main>
+
+  <script src="account.js?v=2.0"></script>
+  <script>
+    if (localStorage.theme === 'dark') document.body.classList.add('dark');
+    function toggleTheme() {
+      const isDark = document.body.classList.toggle('dark');
+      localStorage.setItem('theme', isDark ? 'dark' : 'light');
+    }
+  </script>
 </body>
+
 </html>
