@@ -1,6 +1,7 @@
 const API_TRANS = "http://localhost:8000/api/v1/accounts/transactions/";
 const urlParams = new URLSearchParams(window.location.search);
 const accountId = urlParams.get('id');
+let availableBalance = null;
 
 document.addEventListener('DOMContentLoaded', async () => {
   const historyEl = document.getElementById('history-list');
@@ -20,6 +21,19 @@ document.addEventListener('DOMContentLoaded', async () => {
   if (senderSelect) senderSelect.value = `ID: ...${accountId.slice(-8)}`;
 
   try {
+    const accountsResponse = await fetch('http://localhost:8000/api/v1/accounts/accounts/', {
+      headers: { 'Authorization': `Bearer ${access}` }
+    });
+    if (accountsResponse.ok) {
+      const accounts = await accountsResponse.json();
+      const account = accounts.find(item => String(item.id) === String(accountId));
+      if (account) {
+        availableBalance = Number(account.balance);
+        document.getElementById('available-balance').textContent = new Intl.NumberFormat('en-IN', {
+          style: 'currency', currency: 'INR', maximumFractionDigits: 0
+        }).format(availableBalance);
+      }
+    }
     const response = await fetch(`${API_TRANS}history/`, {
       headers: { 'Authorization': `Bearer ${access}` }
     });
@@ -82,6 +96,14 @@ async function initiateTransfer() {
     feedback.innerHTML = '<p class="text-red-600 text-sm font-semibold py-2">Incomplete transfer data.</p>';
     return;
   }
+  if (!Number.isSafeInteger(Number(amount)) || Number(amount) <= 0) {
+    feedback.innerHTML = '<p class="text-red-600 text-sm font-semibold py-2">Enter a positive whole number of rupees.</p>';
+    return;
+  }
+  if (availableBalance !== null && Number(amount) > availableBalance) {
+    feedback.innerHTML = '<p class="text-red-600 text-sm font-semibold py-2">Amount exceeds the available balance.</p>';
+    return;
+  }
 
   btn.disabled = true;
   btn.textContent = "Processing Core Transaction...";
@@ -97,7 +119,7 @@ async function initiateTransfer() {
       body: JSON.stringify({
         sender_id: accountId,
         receiver_id: receiver,
-        amount: amount,
+        amount: Number(amount),
         description: desc
       })
     });

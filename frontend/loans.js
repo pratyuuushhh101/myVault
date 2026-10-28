@@ -199,8 +199,9 @@ function openLoanModal(type, loanId = null) {
                     <div class="space-y-2">
                         <label class="text-[10px] font-black opacity-30 uppercase tracking-widest px-1">Disbursement Vault</label>
                         <select name="account_id" class="w-full p-4 bg-slate-50 dark:bg-white/5 rounded-2xl font-bold text-xs outline-none border border-black/5 dark:border-white/5">
-                            ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} (${formatCurrency(a.balance)})</option>`).join('')}
+                            ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} — Available: ${formatCurrency(a.balance)}</option>`).join('')}
                         </select>
+                        <p class="available-balance" data-balance-for="account_id">Available balance: ${formatCurrency(currentAccounts[0]?.balance || 0)}</p>
                     </div>
                     <div class="space-y-2">
                         <label class="text-[10px] font-black opacity-30 uppercase tracking-widest px-1">Debt Archetype</label>
@@ -213,7 +214,7 @@ function openLoanModal(type, loanId = null) {
                 </div>
                 <div class="space-y-2">
                     <label class="text-[10px] font-black opacity-30 uppercase tracking-widest px-1">Principal Capital (₹)</label>
-                    <input name="amount" type="number" step="100" placeholder="Min. 100.00" class="w-full p-5 bg-slate-50 dark:bg-white/5 rounded-2xl font-bold text-sm outline-none border border-black/5 dark:border-white/5" required>
+                    <input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="Whole rupees, minimum ₹1" class="w-full p-5 bg-slate-50 dark:bg-white/5 rounded-2xl font-bold text-sm outline-none border border-black/5 dark:border-white/5" required>
                 </div>
                 <div class="space-y-2">
                     <label class="text-[10px] font-black opacity-30 uppercase tracking-widest px-1">Security PIN Confirmation</label>
@@ -231,12 +232,13 @@ function openLoanModal(type, loanId = null) {
                 <div class="space-y-2">
                     <label class="text-[10px] font-black opacity-30 uppercase tracking-widest px-1">Settlement Source Vault</label>
                     <select name="account_id" class="w-full p-4 bg-slate-50 dark:bg-white/5 rounded-2xl font-bold text-xs outline-none border border-black/5 dark:border-white/5">
-                        ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} (${formatCurrency(a.balance)})</option>`).join('')}
+                        ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} — Available: ${formatCurrency(a.balance)}</option>`).join('')}
                     </select>
+                    <p class="available-balance" data-balance-for="account_id">Available balance: ${formatCurrency(currentAccounts[0]?.balance || 0)}</p>
                 </div>
                 <div class="space-y-2">
                     <label class="text-[10px] font-black opacity-30 uppercase tracking-widest px-1">Settlement Volume (₹)</label>
-                    <input name="amount" type="number" step="0.01" placeholder="Repayment Volume" class="w-full p-5 bg-slate-50 dark:bg-white/5 rounded-2xl font-bold text-sm outline-none border border-black/5 dark:border-white/5" required>
+                    <input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="Whole rupees" class="w-full p-5 bg-slate-50 dark:bg-white/5 rounded-2xl font-bold text-sm outline-none border border-black/5 dark:border-white/5" required>
                 </div>
                 <div class="space-y-2">
                     <label class="text-[10px] font-black opacity-30 uppercase tracking-widest px-1">Security PIN Confirmation</label>
@@ -246,9 +248,22 @@ function openLoanModal(type, loanId = null) {
             </div>
         `;
     }
+    updateLoanAvailableBalance();
 }
 
 function closeLoanModal() { document.getElementById('loan-modal').classList.replace('flex', 'hidden'); activeModalType = null; }
+
+function updateLoanAvailableBalance() {
+    document.querySelectorAll('[data-balance-for="account_id"]').forEach(label => {
+        const select = label.parentElement.querySelector('[name="account_id"]');
+        const account = currentAccounts.find(item => String(item.id) === String(select?.value));
+        label.textContent = account ? `Available balance: ${formatCurrency(account.balance)}` : '';
+        if (select && !select.dataset.balanceListener) {
+            select.addEventListener('change', updateLoanAvailableBalance);
+            select.dataset.balanceListener = 'true';
+        }
+    });
+}
 
 /**
  * 🛠️ ERROR PARSER
@@ -278,6 +293,20 @@ async function handleLoanSubmit(e) {
 
     const data = new FormData(e.target);
     const body = Object.fromEntries(data.entries());
+    const amount = Number(body.amount);
+    if (!Number.isSafeInteger(amount) || amount <= 0) {
+        feedback.innerHTML = '<p class="text-red-500 font-bold text-[10px] uppercase text-center py-2">Enter a positive whole number of rupees.</p>';
+        return;
+    }
+    if (activeModalType === 'repay') {
+        const accountId = body.account_id;
+        const account = currentAccounts.find(item => String(item.id) === String(accountId));
+        if (account && amount > Number(account.balance)) {
+            feedback.innerHTML = '<p class="text-red-500 font-bold text-[10px] uppercase text-center py-2">Amount exceeds the selected vault’s available balance.</p>';
+            return;
+        }
+    }
+    body.amount = amount;
 
     try {
         submitBtn.disabled = true;

@@ -18,22 +18,8 @@ let cachedTransactions = [];
 let currentLoans = [];
 let idIsMasked = true;
 let activeModalType = null;
-
-/**
- * 🌙 THEME ENGINE
- */
-function toggleTheme() {
-  const isDark = document.body.classList.toggle('dark');
-  localStorage.setItem('theme', isDark ? 'dark' : 'light');
-  updateThemeIcon(isDark);
-}
-function updateThemeIcon(isDark) {
-  const icon = document.getElementById('theme-icon');
-  if (!icon) return;
-  icon.innerHTML = isDark
-    ? `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M3 12h2.25m.386-6.364 1.591 1.591M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />`
-    : `<path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />`;
-}
+const updatingAccountIds = new Set();
+const ledgerFilters = { date: 'recent', type: 'all', volume: 'default' };
 
 /**
  * 🛰️ UTILS
@@ -77,13 +63,14 @@ async function coreFetch(url, options = {}) {
  * 🔄 LIFECYCLE
  */
 document.addEventListener('DOMContentLoaded', async () => {
-  if (localStorage.theme === 'dark') { document.body.classList.add('dark'); updateThemeIcon(true); }
   const userDisp = document.getElementById('user-display');
 
   // Only sync core banking data if on a page with a summary bar/dashboard context
   if (document.getElementById('summary-bar') || document.getElementById('accounts-grid')) {
     await syncDashboard();
   }
+
+  initializeLedgerFilters();
 
   if (userDisp) {
     userDisp.textContent = localStorage.user_display || "Authorized User";
@@ -92,13 +79,23 @@ document.addEventListener('DOMContentLoaded', async () => {
 
 async function syncDashboard() {
   try {
-    currentAccounts = await coreFetch(ENDPOINTS.accounts);
-    cachedTransactions = await coreFetch(ENDPOINTS.transactions);
-    currentLoans = await coreFetch(ENDPOINTS.loans);
+    const [accounts, transactions, loans] = await Promise.all([
+      coreFetch(ENDPOINTS.accounts),
+      coreFetch(ENDPOINTS.transactions),
+      coreFetch(ENDPOINTS.loans)
+    ]);
+
+    currentAccounts = accounts;
+    cachedTransactions = transactions;
+    currentLoans = loans;
     renderSummaryBar();
     renderAccounts();
     renderTransactions();
-  } catch (err) { console.error(err); }
+    return true;
+  } catch (err) {
+    console.error(err);
+    return false;
+  }
 }
 
 function renderSummaryBar() {
@@ -129,26 +126,77 @@ function renderAccounts() {
   grid.innerHTML = '';
   currentAccounts.forEach(acc => {
     const card = document.createElement('div');
-    card.className = "card p-8 group cursor-pointer active:scale-[0.99] transition-all";
-    card.onclick = () => openVaultDrawer(acc.id);
+    const isUpdating = updatingAccountIds.has(String(acc.id));
+    card.className = `card p-8 group ${isUpdating ? 'cursor-wait' : 'cursor-pointer active:scale-[0.99]'} transition-all`;
+    if (!isUpdating) card.onclick = () => openVaultDrawer(acc.id);
     card.innerHTML = `
             <div class="flex justify-between items-start mb-10">
                 <div class="bg-blue-600/10 dark:bg-blue-600 text-blue-600 dark:text-white px-2.5 py-1 rounded text-[10px] font-bold uppercase tracking-widest">${acc.account_type}</div>
-                <div class="opacity-0 group-hover:opacity-100 transition-opacity text-[10px] font-bold text-blue-600 uppercase">Audit →</div>
+                <div class="text-[10px] font-bold text-blue-600 uppercase">${isUpdating ? 'Updating...' : 'Audit →'}</div>
             </div>
             <div class="space-y-1">
                 <p class="text-[10px] font-bold opacity-30 uppercase tracking-widest">Available Balance</p>
-                <h4 class="text-3xl font-extrabold tracking-tight">₹${parseFloat(acc.balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h4>
+                <h4 class="text-3xl font-extrabold tracking-tight">${isUpdating ? '<span class="inline-block animate-pulse">Updating...</span>' : `₹${parseFloat(acc.balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}`}</h4>
             </div>
         `;
     grid.appendChild(card);
   });
 }
 
+function setAccountLoading(accountIds, isLoading) {
+  accountIds.forEach(accountId => {
+    const normalizedId = String(accountId);
+    if (isLoading) updatingAccountIds.add(normalizedId);
+    else updatingAccountIds.delete(normalizedId);
+  });
+  renderAccounts();
+}
+
+function getAffectedAccountIds(transactionType, body) {
+  if (transactionType === 'deposit' || transactionType === 'withdraw') {
+    return [body.account_id];
+  }
+  if (transactionType === 'transfer') {
+    return [body.sender_id, body.receiver_id];
+  }
+  return [];
+}
+
 function renderTransactions() {
   const table = document.getElementById('transactions-table');
+  if (!table) return;
   table.innerHTML = '';
-  cachedTransactions.forEach(tx => {
+  const typeFilter = document.getElementById('ledger-type-filter');
+  if (typeFilter) {
+    const selectedType = ledgerFilters.type;
+    const types = [...new Set(cachedTransactions.map(tx => tx.transaction_type).filter(Boolean))].sort();
+    typeFilter.innerHTML = '<option value="all">All types</option>' + types.map(type =>
+      `<option value="${escapeHtml(type)}">${escapeHtml(type.replaceAll('_', ' '))}</option>`
+    ).join('');
+    typeFilter.value = types.includes(selectedType) ? selectedType : 'all';
+    ledgerFilters.type = typeFilter.value;
+  }
+
+  let transactions = [...cachedTransactions];
+  if (ledgerFilters.type !== 'all') {
+    transactions = transactions.filter(tx => tx.transaction_type === ledgerFilters.type);
+  }
+  if (ledgerFilters.date === 'recent') {
+    transactions.sort((a, b) => new Date(b.created_at) - new Date(a.created_at));
+  } else if (ledgerFilters.date === 'oldest') {
+    transactions.sort((a, b) => new Date(a.created_at) - new Date(b.created_at));
+  }
+  if (ledgerFilters.volume === 'smallest') {
+    transactions.sort((a, b) => Math.abs(Number(a.amount)) - Math.abs(Number(b.amount)));
+  } else if (ledgerFilters.volume === 'largest') {
+    transactions.sort((a, b) => Math.abs(Number(b.amount)) - Math.abs(Number(a.amount)));
+  }
+
+  if (!transactions.length) {
+    table.innerHTML = '<tr><td colspan="3" class="px-6 py-10 text-center opacity-50">No transactions match these filters.</td></tr>';
+    return;
+  }
+  transactions.forEach(tx => {
     const { colorClass, sign } = getTxMetadata(tx);
     const row = document.createElement('tr');
     row.className = "hover-row transition-all";
@@ -163,6 +211,30 @@ function renderTransactions() {
         `;
     table.appendChild(row);
   });
+}
+
+function initializeLedgerFilters() {
+  const controls = [
+    ['ledger-date-order', 'date'],
+    ['ledger-type-filter', 'type'],
+    ['ledger-volume-order', 'volume']
+  ];
+  controls.forEach(([id, filter]) => {
+    const control = document.getElementById(id);
+    if (!control) return;
+    control.value = ledgerFilters[filter];
+    control.addEventListener('change', () => {
+      ledgerFilters[filter] = control.value;
+      renderTransactions();
+    });
+  });
+  renderTransactions();
+}
+
+function escapeHtml(value) {
+  return String(value).replace(/[&<>"']/g, char => ({
+    '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;'
+  })[char]);
 }
 
 /**
@@ -320,10 +392,11 @@ function openModal(type) {
     fields.innerHTML = `
             <div class="space-y-4">
                 <select name="sender_id" class="w-full p-4 card font-bold text-xs">
-                    ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} - ₹${a.balance}</option>`).join('')}
+                    ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} - Available: ${formatINR(a.balance)}</option>`).join('')}
                 </select>
+                <p class="available-balance" data-balance-for="sender_id">Available balance: ${formatINR(currentAccounts[0]?.balance)}</p>
                 <input name="receiver_id" placeholder="Receiver UUID" class="w-full p-4 card text-xs font-mono" required>
-                <input name="amount" type="number" step="0.01" placeholder="Volume (₹)" class="w-full p-4 card font-bold" required>
+                <input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="Volume (₹, whole rupees)" class="w-full p-4 card font-bold" required>
                 <input type="password" name="pin" maxlength="4" placeholder="•••• PIN" required 
                        class="w-full p-4 card text-center tracking-[1em] font-mono" style="-webkit-text-security: disc;">
             </div>
@@ -333,9 +406,10 @@ function openModal(type) {
     fields.innerHTML = `
             <div class="space-y-4">
                 <select name="account_id" class="w-full p-4 card font-bold text-xs">
-                    ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} - ₹${a.balance}</option>`).join('')}
+                    ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} - Available: ${formatINR(a.balance)}</option>`).join('')}
                 </select>
-                <input name="amount" type="number" step="0.01" placeholder="Amount (₹)" class="w-full p-4 card font-bold" required>
+                <p class="available-balance" data-balance-for="account_id">Available balance: ${formatINR(currentAccounts[0]?.balance)}</p>
+                <input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="Amount (₹, whole rupees)" class="w-full p-4 card font-bold" required>
                 <input type="password" name="pin" maxlength="4" placeholder="•••• PIN" required 
                        class="w-full p-4 card text-center tracking-[1em] font-mono" style="-webkit-text-security: disc;">
             </div>
@@ -345,9 +419,10 @@ function openModal(type) {
     fields.innerHTML = `
             <div class="space-y-4">
                 <select name="account_id" class="w-full p-4 card font-bold text-xs">
-                    ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} - ₹${a.balance}</option>`).join('')}
+                    ${currentAccounts.map(a => `<option value="${a.id}">${a.account_type} - Available: ${formatINR(a.balance)}</option>`).join('')}
                 </select>
-                <input name="amount" type="number" step="0.01" placeholder="Volume (₹)" class="w-full p-4 card font-bold" required>
+                <p class="available-balance" data-balance-for="account_id">Available balance: ${formatINR(currentAccounts[0]?.balance)}</p>
+                <input name="amount" type="number" min="1" step="1" inputmode="numeric" placeholder="Volume (₹, whole rupees)" class="w-full p-4 card font-bold" required>
                 <input type="password" name="pin" maxlength="4" placeholder="•••• PIN" required 
                        class="w-full p-4 card text-center tracking-[1em] font-mono" style="-webkit-text-security: disc;">
             </div>
@@ -362,6 +437,7 @@ function openModal(type) {
             </div>
         `;
   }
+  updateModalAvailableBalance();
 }
 
 function closeModal() { document.getElementById('modal-container').classList.add('hidden'); activeModalType = null; }
@@ -373,31 +449,49 @@ async function handleFormSubmit(e) {
   const originalText = submitBtn.textContent;
 
   const body = Object.fromEntries(new FormData(e.target).entries());
+  const transactionType = activeModalType;
+  const amount = Number(body.amount);
+  if (['transfer', 'deposit', 'withdraw'].includes(transactionType) && (!Number.isSafeInteger(amount) || amount <= 0)) {
+    document.getElementById('modal-feedback').innerHTML = '<p class="text-red-500 font-bold text-[10px] uppercase text-center py-2">Enter a positive whole number of rupees.</p>';
+    return;
+  }
+  if (transactionType === 'transfer' || transactionType === 'withdraw') {
+    const accountId = transactionType === 'transfer' ? body.sender_id : body.account_id;
+    const account = currentAccounts.find(item => String(item.id) === String(accountId));
+    if (account && amount > Number(account.balance)) {
+      document.getElementById('modal-feedback').innerHTML = '<p class="text-red-500 font-bold text-[10px] uppercase text-center py-2">Amount exceeds the selected vault’s available balance.</p>';
+      return;
+    }
+  }
+  if (body.amount !== undefined) body.amount = amount;
+  const affectedAccountIds = getAffectedAccountIds(transactionType, body);
 
   try {
     // ATOMIC LOCK: Disable button immediately
     submitBtn.disabled = true;
     submitBtn.textContent = "Processing...";
+    setAccountLoading(affectedAccountIds, true);
 
-    let endpoint = (activeModalType === 'transfer') ? ENDPOINTS.transfer
-      : (activeModalType === 'withdraw') ? ENDPOINTS.withdraw
-        : (activeModalType === 'deposit') ? ENDPOINTS.deposit
-          : (activeModalType === 'set-pin') ? ENDPOINTS.setPin
+    let endpoint = (transactionType === 'transfer') ? ENDPOINTS.transfer
+      : (transactionType === 'withdraw') ? ENDPOINTS.withdraw
+        : (transactionType === 'deposit') ? ENDPOINTS.deposit
+          : (transactionType === 'set-pin') ? ENDPOINTS.setPin
             : ENDPOINTS.accounts;
     await coreFetch(endpoint, { method: 'POST', body: JSON.stringify(body) });
 
-    const successMsg = (activeModalType === 'set-pin') ? "Security Synchronized." : "Operation Confirmed.";
+    const successMsg = (transactionType === 'set-pin') ? "Security Synchronized." : "Operation Confirmed.";
     feedback.innerHTML = `<p class="text-emerald-500 font-bold text-[10px] uppercase text-center py-2">${successMsg}</p>`;
 
-    // RELEASE LOCK: Clear on success
     submitBtn.textContent = successMsg;
-
-    setTimeout(async () => {
-      closeModal();
-      await syncDashboard();
-    }, 1200);
+    const dashboardSynced = await syncDashboard();
+    if (!dashboardSynced) {
+      throw new Error("Transaction completed, but the updated vault balance could not be loaded.");
+    }
+    setAccountLoading(affectedAccountIds, false);
+    closeModal();
 
   } catch (err) {
+    setAccountLoading(affectedAccountIds, false);
     // RESET LOCK: Re-enable on failure
     submitBtn.disabled = false;
     submitBtn.textContent = originalText;
@@ -406,6 +500,22 @@ async function handleFormSubmit(e) {
     try { const p = JSON.parse(err.message); msg = Object.values(p).flat().join(", "); } catch (e) { }
     feedback.innerHTML = `<p class="text-red-500 font-bold text-[10px] uppercase text-center py-2">${msg}</p>`;
   }
+}
+
+function formatINR(value) {
+  return new Intl.NumberFormat('en-IN', { style: 'currency', currency: 'INR', maximumFractionDigits: 0 }).format(Number(value) || 0);
+}
+
+function updateModalAvailableBalance() {
+  document.querySelectorAll('[data-balance-for]').forEach(label => {
+    const select = document.querySelector(`[name="${label.dataset.balanceFor}"]`);
+    const account = currentAccounts.find(item => String(item.id) === String(select?.value));
+    label.textContent = account ? `Available balance: ${formatINR(account.balance)}` : '';
+    if (select && !select.dataset.balanceListener) {
+      select.addEventListener('change', updateModalAvailableBalance);
+      select.dataset.balanceListener = 'true';
+    }
+  });
 }
 
 function logout() { localStorage.clear(); window.location.href = "index.html"; }

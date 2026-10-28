@@ -9,7 +9,7 @@
   <script>
     tailwind.config = { darkMode: 'class' }
   </script>
-  <link rel="stylesheet" href="style.css?v=2.5">
+  <link rel="stylesheet" href="style.css?v=4.2">
 </head>
 
 <body class="min-h-screen border-none overflow-x-hidden">
@@ -146,6 +146,29 @@
       <h2 class="text-xs font-bold uppercase tracking-[0.2em] opacity-40 mb-6 flex items-center gap-2">
         <span class="w-1.5 h-1.5 rounded-full bg-emerald-500"></span> Ledger
       </h2>
+      <div class="flex flex-col sm:flex-row sm:items-end gap-3 mb-5">
+        <label class="input-group text-xs font-bold uppercase tracking-widest">
+          Date
+          <select id="ledger-date-order" class="ledger-filter">
+            <option value="recent">Recent first</option>
+            <option value="oldest">Oldest first</option>
+          </select>
+        </label>
+        <label class="input-group text-xs font-bold uppercase tracking-widest">
+          Transaction type
+          <select id="ledger-type-filter" class="ledger-filter">
+            <option value="all">All types</option>
+          </select>
+        </label>
+        <label class="input-group text-xs font-bold uppercase tracking-widest">
+          Volume
+          <select id="ledger-volume-order" class="ledger-filter">
+            <option value="default">Default order</option>
+            <option value="smallest">Smallest first</option>
+            <option value="largest">Largest first</option>
+          </select>
+        </label>
+      </div>
       <div class="table-container rounded-2xl overflow-hidden shadow-sm border">
         <div class="overflow-x-auto text-sm">
           <table class="w-full text-left">
@@ -188,7 +211,8 @@
     </div>
   </div>
 
-  <script src="dashboard.js?v=3.0"></script>
+  <script src="theme.js?v=2"></script>
+  <script src="dashboard.js?v=3.4"></script>
 </body>
 
 </html>

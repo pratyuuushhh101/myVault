@@ -9,7 +9,7 @@
   <script>
     tailwind.config = { darkMode: 'class' }
   </script>
-  <link rel="stylesheet" href="style.css?v=3.1">
+  <link rel="stylesheet" href="style.css?v=4.2">
 </head>
 
 <body class="min-h-screen border-none overflow-x-hidden theme-transition">
@@ -145,24 +145,8 @@
   </div>
 
   <script src="index.js?v=2.7"></script>
+  <script src="theme.js?v=2"></script>
   <script>
-    if (localStorage.theme === 'dark') {
-      document.body.classList.add('dark');
-      const icon = document.getElementById('theme-icon');
-      if (icon) {
-        icon.innerHTML = `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M3 12h2.25m.386-6.364 1.591 1.591M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />`;
-      }
-    }
-    function toggleTheme() {
-      const isDark = document.body.classList.toggle('dark');
-      localStorage.setItem('theme', isDark ? 'dark' : 'light');
-      const icon = document.getElementById('theme-icon');
-      if (icon) {
-        icon.innerHTML = isDark
-          ? `<path stroke-linecap="round" stroke-linejoin="round" d="M12 3v2.25m6.364.386-1.591 1.591M21 12h-2.25m-.386 6.364-1.591-1.591M12 18.75V21m-4.773-4.227-1.591 1.591M3 12h2.25m.386-6.364 1.591 1.591M15.75 12a3.75 3.75 0 1 1-7.5 0 3.75 3.75 0 0 1 7.5 0Z" />`
-          : `<path stroke-linecap="round" stroke-linejoin="round" d="M21.752 15.002A9.72 9.72 0 0 1 18 15.75c-5.385 0-9.75-4.365-9.75-9.75 0-1.33.266-2.597.748-3.752A9.753 9.753 0 0 0 3 11.25C3 16.635 7.365 21 12.75 21a9.753 9.753 0 0 0 9.002-5.998Z" />`;
-      }
-    }
     function togglePasswordVisibility(id) {
       const input = document.getElementById(id);
       input.type = input.type === "password" ? "text" : "password";
