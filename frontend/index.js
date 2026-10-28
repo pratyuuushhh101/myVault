@@ -135,9 +135,7 @@ async function handleAuth(e) {
         btn.textContent = "Handshake Verified.";
         showFeedback("Identity Synchronized. Redirecting...", "success");
 
-        setTimeout(() => {
-            window.location.href = "dashboard.html";
-        }, 1000);
+        window.location.replace("dashboard.html");
 
     } catch (err) {
         console.error("Auth Handshake Failed:", err);
