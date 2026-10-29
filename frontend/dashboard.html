@@ -9,7 +9,7 @@
   <script>
     tailwind.config = { darkMode: 'class' }
   </script>
-  <link rel="stylesheet" href="style.css?v=4.2">
+  <link rel="stylesheet" href="style.css?v=4.3">
 </head>
 
 <body class="min-h-screen border-none overflow-x-hidden">
@@ -113,7 +113,7 @@
           Money</button>
         <button onclick="openModal('withdraw')"
           class="bg-red-600/10 text-red-600 px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-red-600 hover:text-white transition">Withdraw</button>
-        <button onclick="openModal('deposit')"
+        <button onclick="openATM()"
           class="btn-ui px-5 py-2.5 rounded-xl font-bold text-sm hover:opacity-80 transition">Top Up</button>
         <button onclick="openModal('new-vault')"
           class="bg-black text-white px-5 py-2.5 rounded-xl font-bold text-sm border hover:opacity-80 transition">New
@@ -211,8 +211,28 @@
     </div>
   </div>
 
+  <!-- ATM TOP-UP: all screens render inside one cabinet -->
+  <div id="atm-modal" class="atm-backdrop" aria-hidden="true" onclick="closeATMFromBackdrop(event)">
+    <section class="atm-cabinet" role="dialog" aria-modal="true" aria-label="MyVault ATM top-up">
+      <div class="atm-card-slot"><span class="atm-card-slot-light"></span><span class="atm-slot-label">CARD</span></div>
+      <div class="atm-brand"><span class="atm-brand-mark">M</span><span>MYVAULT <small>SELF SERVICE</small></span></div>
+      <div class="atm-face">
+        <div class="atm-side-buttons atm-side-left" id="atm-side-left"></div>
+        <div class="atm-screen-bezel"><div class="atm-screen" id="atm-screen" aria-live="polite"></div></div>
+        <div class="atm-side-buttons atm-side-right" id="atm-side-right"></div>
+      </div>
+      <div class="atm-keypad-wrap">
+        <div class="atm-keypad-heading"><span>SECURE KEYPAD</span><span class="atm-keypad-led"></span></div>
+        <div class="atm-keypad" id="atm-keypad"></div>
+      </div>
+      <div class="atm-dispenser"><div class="atm-dispenser-slot"></div><span>CASH / RECEIPT</span></div>
+      <div id="atm-paper-receipt" class="atm-paper-receipt" aria-live="polite"></div>
+      <button type="button" class="atm-exit" onclick="closeATM()" aria-label="Close ATM">×</button>
+    </section>
+  </div>
+
   <script src="theme.js?v=2"></script>
-  <script src="dashboard.js?v=3.4"></script>
+  <script src="dashboard.js?v=3.5"></script>
 </body>
 
 </html>
