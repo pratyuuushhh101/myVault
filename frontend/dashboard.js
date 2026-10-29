@@ -271,7 +271,7 @@ function renderDrawerContent(acc) {
   content.innerHTML = `
         <div class="space-y-4">
             <h3 class="text-4xl font-extrabold tracking-tight">₹${parseFloat(acc.balance).toLocaleString('en-IN', { minimumFractionDigits: 2 })}</h3>
-            <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Global Liquid Balance</p>
+            <p class="text-[10px] font-bold text-blue-600 dark:text-blue-400 uppercase tracking-widest">Liquid Balance</p>
         </div>
         <div class="space-y-6">
             <div class="p-6 rounded-2xl bg-slate-50 dark:bg-slate-900 shadow-sm border border-slate-100 dark:border-slate-800">
@@ -384,14 +384,15 @@ function openATM() {
   modal.classList.add('is-open');
   modal.setAttribute('aria-hidden', 'false');
   document.body.classList.add('atm-open');
-  atmStep = 'idle';
+  atmStep = 'amount';
   atmPinDigits = '';
   atmAmountDigits = '';
   atmAmount = 0;
   atmAccountId = String(currentAccounts[0].id);
   atmNotice = '';
   atmLastTransaction = null;
-  document.querySelector('.atm-cabinet')?.classList.remove('has-card', 'has-receipt');
+  document.querySelector('.atm-cabinet')?.classList.remove('has-receipt');
+  document.querySelector('.atm-cabinet')?.classList.add('has-card');
   document.getElementById('atm-paper-receipt').textContent = '';
   renderATM();
   resetATMTimeout();
@@ -432,15 +433,17 @@ function resetATMTimeout() {
 function startATM() {
   playATMBeep();
   if (atmLockUntil > Date.now()) {
-    atmStep = 'pin';
+    atmStep = 'amount';
     atmNotice = '';
   } else {
     if (atmLockUntil && atmLockUntil <= Date.now()) {
       atmAttempts = 0;
       atmLockUntil = 0;
     }
-    atmStep = 'pin';
+    atmStep = 'amount';
     atmPinDigits = '';
+    atmAmountDigits = '';
+    atmAmount = 0;
     atmNotice = '';
   }
   document.querySelector('.atm-cabinet')?.classList.add('has-card');
@@ -464,7 +467,7 @@ function renderATM() {
   } else if (atmStep === 'pin') {
     const locked = atmLockUntil > Date.now();
     const seconds = Math.max(1, Math.ceil((atmLockUntil - Date.now()) / 1000));
-    screenContent = `<div class="atm-screen-kicker">STEP 1 OF 3</div><div class="atm-screen-title">Enter your PIN</div><p class="atm-screen-copy">Use the keypad to enter 4 digits.</p><div class="atm-pin-dots" aria-label="${atmPinDigits.length} of 4 PIN digits entered">${[0,1,2,3].map(i => `<span>${i < atmPinDigits.length ? '●' : '_'}</span>`).join('')}</div>${locked ? `<div class="atm-notice">ATM locked · try again in ${seconds}s</div>` : notice}<div class="atm-screen-foot">Attempts remaining: ${Math.max(0, 3 - atmAttempts)}</div>`;
+    screenContent = `<div class="atm-screen-kicker">STEP 2 OF 3</div><div class="atm-screen-title">Enter your PIN</div><p class="atm-screen-copy">Use the keypad to enter 4 digits.</p><div class="atm-pin-dots" aria-label="${atmPinDigits.length} of 4 PIN digits entered">${[0,1,2,3].map(i => `<span>${i < atmPinDigits.length ? '●' : '_'}</span>`).join('')}</div>${locked ? `<div class="atm-notice">ATM locked · try again in ${seconds}s</div>` : notice}<div class="atm-screen-foot">Attempts remaining: ${Math.max(0, 3 - atmAttempts)}</div>`;
     if (locked) {
       clearInterval(atmLockTimer);
       atmLockTimer = setInterval(() => {
@@ -479,9 +482,9 @@ function renderATM() {
     }
   } else if (atmStep === 'amount') {
     const selectedAmount = atmAmount || Number(atmAmountDigits) || 0;
-    screenContent = `<div class="atm-screen-kicker">STEP 2 OF 3 · ${escapeHtml(account?.account_type || 'VAULT')}</div><div class="atm-screen-title">Choose amount</div><p class="atm-screen-copy">Select a preset or enter rupees.</p><div class="atm-quick-amounts">${[500, 1000, 2000, 5000].map(value => `<button type="button" data-atm-amount="${value}" class="${selectedAmount === value ? 'selected' : ''}">₹${value.toLocaleString('en-IN')}</button>`).join('')}</div><div class="atm-amount-display">₹ <strong>${selectedAmount ? selectedAmount.toLocaleString('en-IN') : '—'}</strong></div><div class="atm-account-select"><label for="atm-account">Credit to</label><select id="atm-account">${currentAccounts.map(item => `<option value="${escapeHtml(item.id)}" ${String(item.id) === String(account?.id) ? 'selected' : ''}>${escapeHtml(item.account_type)} · ${money(item.balance)}</option>`).join('')}</select></div>${notice}<div class="atm-screen-foot">Custom amount · max ${money(ATM_MAX_RUPEES)}</div>`;
+    screenContent = `<div class="atm-screen-kicker">STEP 1 OF 3 · ${escapeHtml(account?.account_type || 'VAULT')}</div><div class="atm-screen-title">Choose amount</div><p class="atm-screen-copy">Select a preset or enter rupees.</p><div class="atm-quick-amounts">${[500, 1000, 2000, 5000].map(value => `<button type="button" data-atm-amount="${value}" class="${selectedAmount === value ? 'selected' : ''}">₹${value.toLocaleString('en-IN')}</button>`).join('')}</div><div class="atm-amount-display">₹ <strong>${selectedAmount ? selectedAmount.toLocaleString('en-IN') : '—'}</strong></div><div class="atm-account-select"><label for="atm-account">Credit to</label><select id="atm-account">${currentAccounts.map(item => `<option value="${escapeHtml(item.id)}" ${String(item.id) === String(account?.id) ? 'selected' : ''}>${escapeHtml(item.account_type)} · ${money(item.balance)}</option>`).join('')}</select></div>${option('Continue to PIN', 'amount-next', 'atm-option-primary')}${notice}<div class="atm-screen-foot">Custom amount · max ${money(ATM_MAX_RUPEES)} · keypad Enter to continue</div>`;
   } else if (atmStep === 'confirm') {
-    screenContent = `<div class="atm-screen-kicker">STEP 3 OF 3 · CONFIRM</div><div class="atm-screen-title">Top up ${money(atmAmount)}?</div><p class="atm-screen-copy">${escapeHtml(account?.account_type || 'Vault')} balance will update after approval.</p><div class="atm-balance-preview"><span>Current balance</span><strong>${money(balance)}</strong><span>New balance</span><strong>${money(balance + atmAmount)}</strong></div>${notice}<div class="atm-action-row">${option('Cancel', 'cancel', 'atm-option-muted')}${option('Confirm', 'confirm', 'atm-option-primary')}</div><div class="atm-screen-foot">Choose Confirm or Cancel</div>`;
+    screenContent = `<div class="atm-screen-kicker">STEP 3 OF 3 · CONFIRM</div><div class="atm-screen-title">Top up ${money(atmAmount)}?</div><p class="atm-screen-copy">${escapeHtml(account?.account_type || 'Vault')} balance will update after approval.</p><div class="atm-balance-preview"><span>Current balance</span><strong>${money(balance)}</strong><span>New balance</span><strong>${money(balance + atmAmount)}</strong></div>${notice}<div class="atm-action-row">${option('Cancel', 'back-amount', 'atm-option-muted')}${option('Confirm', 'confirm', 'atm-option-primary')}</div><div class="atm-screen-foot">Choose Confirm or Cancel</div>`;
   } else if (atmStep === 'processing') {
     screenContent = `<div class="atm-screen-kicker">SECURE TRANSACTION</div><div class="atm-processing-spinner"></div><div class="atm-screen-title">Please wait…</div><p class="atm-screen-copy">Contacting your vault securely.</p><div class="atm-screen-foot">Do not remove your card</div>`;
   } else {
@@ -530,6 +533,7 @@ function renderATM() {
 
 function handleATMScreenAction(action) {
   if (action === 'start') return startATM();
+  if (action === 'amount-next') return handleATMKey('Enter');
   if (action === 'confirm') return processATMTopUp();
   if (action === 'cancel' || action === 'close') return closeATM();
   if (action === 'restart') return openATM();
@@ -546,7 +550,7 @@ function handleATMKey(key) {
     if (atmLockUntil > Date.now()) return;
     if (key === 'Clear') atmPinDigits = '';
     else if (key === 'Enter') {
-      if (atmPinDigits.length === 4) { atmStep = 'amount'; atmNotice = ''; }
+      if (atmPinDigits.length === 4) { atmStep = 'confirm'; atmNotice = ''; }
       else atmNotice = 'Enter all 4 PIN digits.';
     } else if (/^\d$/.test(key) && atmPinDigits.length < 4) atmPinDigits += key;
   } else if (atmStep === 'amount') {
@@ -555,7 +559,7 @@ function handleATMKey(key) {
       const value = Number(atmAmountDigits);
       if (!Number.isSafeInteger(value) || value <= 0) atmNotice = 'Enter a positive whole rupee amount.';
       else if (value > ATM_MAX_RUPEES) { atmLastTransaction = { ok: false, message: `ATM limit exceeded. Maximum is ${formatINR(ATM_MAX_RUPEES)}.` }; atmStep = 'done'; }
-      else { atmAmount = value; atmNotice = ''; atmStep = 'confirm'; }
+      else { atmAmount = value; atmNotice = ''; atmPinDigits = ''; atmStep = 'pin'; }
     } else if (/^\d$/.test(key) && atmAmountDigits.length < 10) {
       atmAmountDigits += key; atmAmount = Number(atmAmountDigits); atmNotice = '';
     }
@@ -606,8 +610,6 @@ async function processATMTopUp() {
     if (isWrongPin) {
       atmAttempts += 1;
       atmPinDigits = '';
-      atmAmountDigits = '';
-      atmAmount = 0;
       atmNotice = atmAttempts >= 3
         ? 'Too many incorrect PINs. ATM locked for 30 seconds.'
         : `Incorrect PIN. ${3 - atmAttempts} attempt${3 - atmAttempts === 1 ? '' : 's'} remaining.`;
