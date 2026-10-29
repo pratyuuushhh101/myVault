@@ -15,17 +15,16 @@ class CustomTokenObtainPairSerializer(TokenObtainPairSerializer):
             raise exceptions.AuthenticationFailed('Both username/email and password are required.')
 
         # Attempt to find user by username or email
-        user = User.objects.filter(Q(username=identity) | Q(email=identity)).first()
+        # Resolve email identifiers to usernames, then let SimpleJWT perform the
+        # single authoritative password hash check in its normal authenticate flow.
+        # Checking the hash here as well would make each successful login do it twice.
+        username = User.objects.filter(
+            Q(username=identity) | Q(email=identity)
+        ).values_list('username', flat=True).first()
 
-        if user and user.check_password(password):
-            if not user.is_active:
-                raise exceptions.AuthenticationFailed('User account is disabled.')
-            
-            # Pass correct internal username to parent for token generation
-            attrs['username'] = user.username
-            return super().validate(attrs)
-        
-        raise exceptions.AuthenticationFailed('No active account found with the given credentials.')
+        if username:
+            attrs['username'] = username
+        return super().validate(attrs)
 
 class UserRegistrationSerializer(serializers.ModelSerializer):
     password = serializers.CharField(write_only=True, min_length=8)

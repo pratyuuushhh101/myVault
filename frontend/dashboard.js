@@ -294,6 +294,7 @@ function renderDrawerContent(acc) {
         <div class="space-y-4 pt-10">
              <button onclick="openModal('transfer');" class="w-full bg-blue-600 text-white font-bold py-5 rounded-xl text-xs uppercase tracking-widest hover:bg-blue-700 transition active:scale-[0.98]">Transfer Funds</button>
              <button onclick="openATM();" class="w-full btn-ui font-bold py-5 rounded-xl text-xs uppercase tracking-widest hover:opacity-80 transition active:scale-[0.98]">Add Funds</button>
+             <a href="account.html?id=${actualID}" class="w-full btn-ui flex items-center justify-center font-bold py-5 rounded-xl text-xs uppercase tracking-widest hover:opacity-80 transition active:scale-[0.98]">View Full Statement</a>
         </div>
   `;
 }

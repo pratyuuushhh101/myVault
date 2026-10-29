@@ -164,10 +164,22 @@ class TransactionViewSet(viewsets.ViewSet):
     def deposit(self, request):
         serializer = DepositWithdrawSerializer(data=request.data)
         serializer.is_valid(raise_exception=True)
+
+        if serializer.validated_data['amount'] > Decimal('50000.00'):
+            return Response({"error": "ATM limit exceeded: maximum top-up is ₹50,000."}, status=status.HTTP_400_BAD_REQUEST)
+
+        account_id = serializer.validated_data['account_id']
+        if not Account.objects.filter(id=account_id, user=request.user).exists():
+            return Response({"error": "Unauthorized deposit context."}, status=status.HTTP_403_FORBIDDEN)
+
+        # 🔐 Require the authenticated user's transaction PIN for top-ups.
+        pin = serializer.validated_data.get('pin')
+        if not pin or not request.user.check_transaction_pin(pin):
+            return Response({"error": "Security Mismatch: Invalid Transaction PIN."}, status=status.HTTP_403_FORBIDDEN)
         
         try:
             tx = TransactionEngine.deposit_funds(
-                account_id=str(serializer.validated_data['account_id']),
+                account_id=str(account_id),
                 amount=Decimal(str(serializer.validated_data['amount']))
             )
             return Response(TransactionHistorySerializer(tx).data, status=status.HTTP_201_CREATED)

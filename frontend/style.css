@@ -598,3 +598,105 @@ body.atm-open { overflow: hidden; }
 body, .card, .table-container, .nav-bg, aside, input, select, button {
     transition: background-color 0.2s ease, color 0.2s ease, border-color 0.2s ease;
 }
+
+/* Responsive layout foundations */
+*, *::before, *::after { box-sizing: border-box; }
+html { min-width: 320px; }
+body { min-width: 320px; overflow-x: clip; }
+input, select, textarea, button { max-width: 100%; }
+.account-input { width: 100%; min-width: 0; }
+#vault-drawer { width: min(380px, 100vw); overflow-y: auto; }
+#audit-drawer { width: min(420px, 100vw); overflow-y: auto; }
+.dashboard-modal-card, .loan-modal-card { max-height: calc(100svh - 2rem); overflow-y: auto; }
+#modal-container { overflow-y: auto; }
+#loan-modal { overflow-y: auto; }
+.dashboard-nav-actions, .loan-nav-actions, .account-nav-actions { min-width: 0; max-width: 100%; }
+.account-layout, .dashboard-page-actions, #loan-summary-grid, #accounts-grid { min-width: 0; }
+.table-container { min-width: 0; }
+
+@media (max-width: 1023px) {
+    .account-layout { grid-template-columns: minmax(0, 1fr); gap: 2rem; padding-inline: 1.25rem; }
+    .account-layout > div:nth-child(2) > .sticky { position: static; top: auto; }
+}
+
+@media (max-width: 767px) {
+    .dashboard-nav-inner, .loan-nav-inner {
+        height: auto;
+        min-height: 4rem;
+        flex-wrap: wrap;
+        gap: .5rem;
+        padding-block: .55rem;
+    }
+    .dashboard-nav-actions, .loan-nav-actions {
+        justify-content: flex-end;
+        flex-wrap: wrap;
+        gap: .45rem;
+    }
+    .dashboard-nav-actions > *, .loan-nav-actions > * { min-height: 40px; }
+    .dashboard-nav-actions a, .dashboard-nav-actions button,
+    .loan-nav-actions a, .loan-nav-actions button { padding-inline: .6rem; }
+    .dashboard-page-actions { width: 100%; }
+    .dashboard-page-actions > button { flex: 1 1 calc(50% - .5rem); min-width: 0; }
+    .dashboard-page-actions > button { padding-inline: .75rem; }
+    #dashboard main, body > main { padding-top: 1.5rem; }
+    #accounts-grid > .col-span-full { padding: 2.5rem 1rem; }
+
+    .account-nav-inner {
+        flex-wrap: wrap;
+        gap: .8rem;
+        padding-inline: 1rem;
+    }
+    .account-nav-actions { gap: .65rem; }
+    .account-nav-actions > * { min-height: 40px; }
+    .account-layout { padding-inline: 1rem; padding-bottom: 3rem; }
+    .account-layout h2 { font-size: 1.65rem; }
+    .account-layout > div:first-child > div:first-child { margin-bottom: 1.5rem; }
+    .account-layout > div:nth-child(2) > .card { padding: 1.25rem; }
+    .account-layout #history-list > .card { gap: .6rem; padding: .8rem; min-width: 0; }
+    .account-layout #history-list > .card > div:first-child { flex: 1 1 auto; min-width: 0; gap: .6rem; }
+    .account-layout #history-list > .card > div:last-child { flex: 0 0 auto; max-width: 49%; overflow-wrap: anywhere; }
+    .account-layout #history-list > .card > div:last-child > div:first-child { font-size: .8rem; }
+    .account-layout #history-list > .card > div:first-child > div:last-child { overflow-wrap: anywhere; }
+    .account-layout input { font-size: .9rem; }
+    .account-layout #receiver_id { font-size: .68rem; }
+
+    .loan-modal-card, .dashboard-modal-card { padding: 1.5rem; }
+    #modal-container:not(.hidden) { align-items: flex-start; }
+    #loan-modal.flex { align-items: flex-start; }
+    .loan-modal-card #modal-fields .grid.grid-cols-2 { grid-template-columns: minmax(0, 1fr); }
+    .loan-modal-card #modal-title { font-size: 1.35rem; }
+
+    .ledger-filter { width: 100%; min-width: 0; }
+    .input-group:has(.ledger-filter) { width: 100%; }
+    th, td { padding: .8rem 1rem; }
+    aside { max-width: 100vw; padding: 1.25rem !important; }
+}
+
+@media (max-width: 520px) {
+    .auth-grid { min-height: 100svh; padding: 1rem; }
+    .auth-card { padding: 2rem 1.2rem; }
+    #signup-name-row { grid-template-columns: minmax(0, 1fr); }
+    .landing-image { width: min(78vw, 360px); height: min(78vw, 360px); }
+    .landing-theme { right: 1rem; bottom: 1rem; }
+    .dashboard-page-actions > button { font-size: .73rem; }
+    .dashboard-nav-inner, .loan-nav-inner { align-items: center; }
+    .account-nav-actions { gap: .4rem; }
+    .account-nav-actions > a { font-size: .65rem; letter-spacing: .08em; }
+    .account-nav-actions > button[onclick="logout()"] { font-size: .68rem; letter-spacing: .08em; }
+    .account-transfer-fields { grid-template-columns: minmax(0, 1fr); }
+    .account-layout #history-list > .card > div:last-child { max-width: 52%; }
+    .loan-modal-card, .dashboard-modal-card { padding: 1.2rem; }
+    .dashboard-modal-card > div:first-child { margin-bottom: 1.25rem; }
+    #modal-container, #loan-modal { padding: .6rem; }
+    .atm-backdrop { padding-bottom: 7rem; }
+}
+
+@media (max-width: 360px) {
+    .dashboard-nav-inner, .loan-nav-inner { justify-content: center; }
+    .dashboard-nav-actions, .loan-nav-actions { justify-content: center; }
+    .dashboard-page-actions > button { flex-basis: 100%; }
+    .account-nav-inner { justify-content: center; }
+    .account-nav-actions { justify-content: center; }
+    .account-layout #history-list > .card { flex-wrap: wrap; }
+    .account-layout #history-list > .card > div:last-child { width: 100%; max-width: none; text-align: left; padding-left: 3.2rem; }
+}

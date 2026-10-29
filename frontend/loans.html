@@ -9,7 +9,7 @@
     <script>
         tailwind.config = { darkMode: 'class' }
     </script>
-    <link rel="stylesheet" href="style.css?v=4.2">
+    <link rel="stylesheet" href="style.css?v=4.4">
 </head>
 
 <body class="min-h-screen border-none overflow-x-hidden theme-transition">
@@ -37,7 +37,7 @@
     <!-- NAVBAR -->
     <nav class="sticky top-0 z-50 border-b nav-bg">
         <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-            <div class="flex justify-between h-16 items-center">
+            <div class="loan-nav-inner flex justify-between h-16 items-center">
                 <div class="flex items-center gap-3">
                     <a href="dashboard.html" class="flex items-center gap-3">
                         <div class="bg-blue-600 p-1.5 rounded-lg">
@@ -49,7 +49,7 @@
                         <span class="text-xl font-bold tracking-tight">MyVault</span>
                     </a>
                 </div>
-                <div class="flex items-center gap-6">
+                <div class="loan-nav-actions flex items-center gap-6">
                     <a href="dashboard.html"
                         class="text-xs font-bold opacity-50 hover:opacity-100 uppercase tracking-widest transition">Dashboard</a>
                     <button onclick="toggleTheme()" id="theme-btn">
@@ -125,7 +125,7 @@
     <!-- MODAL -->
     <div id="loan-modal"
         class="fixed inset-0 z-[100] hidden items-center justify-center p-4 bg-black/80 backdrop-blur-sm">
-        <div class="card w-full max-w-lg p-10 shadow-2xl relative border-none bg-white dark:bg-[#0A0A0A]">
+        <div class="loan-modal-card card w-full max-w-lg p-10 shadow-2xl relative border-none bg-white dark:bg-[#0A0A0A]">
             <div class="flex justify-between items-center mb-8">
                 <h3 id="modal-title" class="text-2xl font-extrabold tracking-tight">Provision Loan</h3>
                 <button onclick="closeLoanModal()" class="opacity-30 hover:opacity-100 transition-opacity">

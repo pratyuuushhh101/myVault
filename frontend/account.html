@@ -6,23 +6,23 @@
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>MyVault Account | Real-time History</title>
   <script src="https://cdn.tailwindcss.com"></script>
-  <link rel="stylesheet" href="style.css?v=4.2">
+  <link rel="stylesheet" href="style.css?v=4.4">
 </head>
 
 <body class="min-h-screen fade-in">
 
   <nav class="account-nav border-b py-4 shadow-sm mb-10">
-    <div class="max-w-5xl mx-auto px-6 flex justify-between items-center">
+    <div class="account-nav-inner max-w-5xl mx-auto px-6 flex justify-between items-center">
       <a href="dashboard.html"
-        class="flex items-center gap-2 text-xl font-bold tracking-tight transition hover:text-blue-600">
+        class="flex items-center gap-2 text-xl font-bold tracking-tight transition hover:text-green-600">
         <svg class="w-5 h-5 text-blue-600" fill="none" stroke="currentColor" viewBox="0 0 24 24">
           <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2" d="M10 19l-7-7m0 0l7-7m-7 7h18"></path>
         </svg>
         MyVault <span class="font-normal text-muted">Bank</span>
       </a>
-      <div class="flex items-center gap-6">
+      <div class="account-nav-actions flex items-center gap-6">
         <a href="loans.html"
-          class="text-xs font-bold text-muted hover:text-blue-600 transition uppercase tracking-widest">Loans</a>
+          class="text-xs font-bold text-muted hover:text-green-600 transition uppercase tracking-widest">Loans</a>
         <button onclick="toggleTheme()" id="theme-btn">
           <svg id="theme-icon" class="w-5 h-5" fill="none" stroke="currentColor" viewBox="0 0 24 24">
             <path stroke-linecap="round" stroke-linejoin="round" stroke-width="2"
@@ -35,7 +35,7 @@
     </div>
   </nav>
 
-  <main class="max-w-5xl mx-auto px-6 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
+  <main class="account-layout max-w-5xl mx-auto px-6 pb-20 grid grid-cols-1 lg:grid-cols-2 gap-12">
     <div>
       <div class="mb-10">
         <h2 class="text-3xl font-bold tracking-tight account-title">History <span
@@ -71,7 +71,7 @@
                 placeholder="550e8400-e29b-41d4-a716-446655440000" required />
             </div>
 
-            <div class="grid grid-cols-2 gap-4">
+            <div class="account-transfer-fields grid grid-cols-2 gap-4">
               <div>
                 <label class="block text-xs font-bold uppercase tracking-widest text-muted mb-2 ml-1">Amount
                   (₹)</label>
@@ -97,6 +97,14 @@
                 placeholder="Payment memo" />
             </div>
 
+            <div>
+              <label for="transaction_pin" class="block text-xs font-bold uppercase tracking-widest text-muted mb-2 ml-1">Transaction PIN</label>
+              <input id="transaction_pin" type="password" inputmode="numeric" pattern="[0-9]{4}"
+                maxlength="4" autocomplete="off" placeholder="4-digit PIN"
+                class="px-4 py-3 rounded-lg account-input border outline-none transition-all font-mono tracking-[0.5em]"
+                required />
+            </div>
+
             <button id="transfer-btn" type="submit"
               class="w-full bg-blue-600 text-white font-bold py-3.5 rounded-lg hover:bg-blue-700 transition shadow-sm shadow-blue-500/20 active:scale-[0.98]">
               Execute Transfer
@@ -104,17 +112,17 @@
             <div id="transfer-feedback" class="text-center min-h-[1.5rem]">
               <!-- Success/Error messages appear here -->
             </div>
-            <p
+            <!-- <p
               class="text-center text-[10px] text-slate-400 uppercase tracking-tighter font-bold border-t border-slate-50 pt-4">
               Real-time row-level concurrency isolation
-            </p>
+            </p> -->
           </form>
         </div>
       </div>
     </div>
   </main>
 
-  <script src="account.js?v=2.1"></script>
+  <script src="account.js?v=2.2"></script>
   <script src="theme.js?v=2"></script>
 </body>
 

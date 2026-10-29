@@ -89,11 +89,18 @@ async function initiateTransfer() {
   const receiver = document.getElementById('receiver_id').value;
   const amount = document.getElementById('amount').value;
   const desc = document.getElementById('description').value;
+  const pinField = document.getElementById('transaction_pin');
+  const pin = pinField.value;
   const btn = document.getElementById('transfer-btn');
   const feedback = document.getElementById('transfer-feedback');
 
   if (!receiver || !amount) {
     feedback.innerHTML = '<p class="text-red-600 text-sm font-semibold py-2">Incomplete transfer data.</p>';
+    return;
+  }
+  if (!/^\d{4}$/.test(pin)) {
+    feedback.innerHTML = '<p class="text-red-600 text-sm font-semibold py-2">Enter your 4-digit transaction PIN.</p>';
+    pinField.focus();
     return;
   }
   if (!Number.isSafeInteger(Number(amount)) || Number(amount) <= 0) {
@@ -120,6 +127,7 @@ async function initiateTransfer() {
         sender_id: accountId,
         receiver_id: receiver,
         amount: Number(amount),
+        pin,
         description: desc
       })
     });
@@ -127,12 +135,18 @@ async function initiateTransfer() {
     const data = await response.json();
 
     if (response.ok) {
+      pinField.value = '';
       feedback.innerHTML = '<p class="text-emerald-600 text-sm font-semibold py-2">Transfer Successful. Account Updated.</p>';
       setTimeout(() => window.location.reload(), 1500);
     } else {
+      pinField.value = '';
       btn.disabled = false;
       btn.textContent = "Execute Transfer";
-      feedback.innerHTML = `<p class="text-red-600 text-sm font-semibold py-2">Error: ${data.error || 'Transaction denied.'}</p>`;
+      const errorMessage = data.error || data.detail || Object.values(data).flat().find(value => typeof value === 'string') || 'Transaction denied.';
+      const errorParagraph = document.createElement('p');
+      errorParagraph.className = 'text-red-600 text-sm font-semibold py-2';
+      errorParagraph.textContent = `Error: ${errorMessage}`;
+      feedback.replaceChildren(errorParagraph);
     }
   } catch (err) {
     btn.disabled = false;

@@ -9,7 +9,7 @@
   <script>
     tailwind.config = { darkMode: 'class' }
   </script>
-  <link rel="stylesheet" href="style.css?v=4.3">
+  <link rel="stylesheet" href="style.css?v=4.4">
 </head>
 
 <body class="min-h-screen border-none overflow-x-hidden">
@@ -55,7 +55,7 @@
   <!-- NAVBAR -->
   <nav class="sticky top-0 z-50 border-b nav-bg">
     <div class="max-w-6xl mx-auto px-4 sm:px-6 lg:px-8">
-      <div class="flex justify-between h-16 items-center">
+      <div class="dashboard-nav-inner flex justify-between h-16 items-center">
         <div class="flex items-center gap-3">
           <div class="bg-blue-600 p-1.5 rounded-lg">
             <svg class="w-6 h-6 text-white" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -65,7 +65,7 @@
           </div>
           <span class="text-xl font-bold tracking-tight">MyVault</span>
         </div>
-        <div class="flex items-center gap-6">
+        <div class="dashboard-nav-actions flex items-center gap-6">
           <a href="loans.html"
             class="flex items-center gap-2 p-2 px-3 rounded-xl bg-slate-100 dark:bg-slate-800 hover:bg-slate-200 dark:hover:bg-slate-700 transition-all text-[10px] font-bold uppercase tracking-widest border border-slate-200 dark:border-slate-700">
             <!-- <svg class="w-3 h-3" fill="none" stroke="currentColor" viewBox="0 0 24 24">
@@ -107,7 +107,7 @@
         <h1 class="text-3xl font-bold tracking-tight" >finance <span class="opacity-30 font-medium">Dashboard</span></h1>
         <!-- <p class="opacity-50 mt-1 font-medium">Real-time holdings audit.</p> -->
       </div>
-      <div class="flex gap-3">
+      <div class="dashboard-page-actions flex flex-wrap gap-3">
         <button onclick="openModal('transfer')"
           class="bg-blue-600 text-white px-5 py-2.5 rounded-xl font-bold text-sm hover:bg-blue-700 transition">Send
           Money</button>
@@ -192,7 +192,7 @@
 
   <!-- ACTION MODAL -->
   <div id="modal-container" class="fixed inset-0 z-[100] hidden flex items-center justify-center p-4">
-    <div class="card w-full max-w-lg p-10 shadow-2xl relative">
+    <div class="dashboard-modal-card card w-full max-w-lg p-10 shadow-2xl relative">
       <div class="flex justify-between items-center mb-8">
         <h3 id="modal-title" class="text-xl font-bold">Operation</h3>
         <button onclick="closeModal()" class="opacity-50 hover:opacity-100">
@@ -232,7 +232,7 @@
   </div>
 
   <script src="theme.js?v=2"></script>
-  <script src="dashboard.js?v=3.5"></script>
+  <script src="dashboard.js?v=3.6"></script>
 </body>
 
 </html>
