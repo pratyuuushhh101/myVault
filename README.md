@@ -1,12 +1,11 @@
-# 🏛️ MyVault: Institutional Banking Engine
+# myVault: Banking Engine
 
-[![GitHub Repository](https://img.shields.io/badge/GitHub-myvault-blue?logo=github)](https://github.com/pratyuuushhh101/myvault)
 
-MyVault is a full-stack, enterprise-grade digital banking web application engineered for multi-account wealth management, atomic fund transfers, and integrated loan provisioning with complete data isolation.
+myVault is a full-stack, digital banking web application engineered for multi-account wealth management, atomic fund transfers, and integrated loan provisioning with complete data isolation.
 
 ---
 
-## 🛠️ Prerequisites
+## Prerequisites
 
 * **Python 3.10+** (tested with Python 3.12 / 3.14)
 * **PostgreSQL** (or a cloud provider like Neon DB)
@@ -14,7 +13,7 @@ MyVault is a full-stack, enterprise-grade digital banking web application engine
 
 ---
 
-## 🚀 How to Run the Project
+## How to Run the Project?
 
 ### 1. Clone the Repository
 ```bash
@@ -97,10 +96,3 @@ python manage.py test accounts
 ```
 
 ---
-
-## 📁 Key Project Pages
-
-* **`index.html`** – Authentication Portal (User Onboarding, Dual Email/Username Login, JWT tokens)
-* **`dashboard.html`** – Core Banking Command Unit (Total Wealth metrics, Vault Grid, Interactive ATM Top-up, Filterable Ledger)
-* **`account.html?id=<UUID>`** – Dedicated Vault History (Color-coded ledger statement, available balance limits, direct transfers)
-* **`loans.html`** – Loan Management System (LMS) (Liability overview cards, debt ledger, loan application & settlement)
